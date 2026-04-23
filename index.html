@@ -1052,6 +1052,13 @@ Example:
     doFormat();
   });
 
+  // Auto-format on input (debounced 300ms)
+  let inputDebounceTimer;
+  inputEl.addEventListener('input', () => {
+    clearTimeout(inputDebounceTimer);
+    inputDebounceTimer = setTimeout(doFormat, 300);
+  });
+
   // ── FAQ Accordion ─────────────────────────────────────────
   document.querySelectorAll('.faq-q').forEach(q => {
     q.addEventListener('click', () => {
