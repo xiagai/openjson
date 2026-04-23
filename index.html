@@ -1031,8 +1031,25 @@ Example:
   });
 
   // Auto-format on paste
-  inputEl.addEventListener('paste', () => {
-    setTimeout(doFormat, 0);
+  // Listen at document level so user doesn't need to click the textarea first.
+  // Only trigger when the active element is the textarea itself, or when no
+  // interactive element is focused (i.e. user pastes anywhere on the page).
+  document.addEventListener('paste', (e) => {
+    const active = document.activeElement;
+    const tag = active ? active.tagName : '';
+    // If focus is inside an editable element that is NOT our input, ignore
+    if (active && active !== inputEl &&
+        (tag === 'INPUT' || tag === 'TEXTAREA' || active.isContentEditable)) {
+      return;
+    }
+    // Get text from clipboard
+    const text = e.clipboardData && e.clipboardData.getData('text');
+    if (!text) return;
+    // Put text into the input and format
+    e.preventDefault();
+    inputEl.value = text;
+    inputEl.focus();
+    doFormat();
   });
 
   // ── FAQ Accordion ─────────────────────────────────────────
