@@ -240,18 +240,84 @@
     textarea:focus { background: #0d101a; }
 
     .output-area {
-      white-space: pre;
+      flex: 1;
       overflow: auto;
-      user-select: text;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
     }
-    .output-area.has-error { color: var(--red); }
+    .output-area.has-error {
+      color: var(--red);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 16px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
 
-    /* JSON syntax highlight */
+    /* ── JSON Tree ── */
+    .json-tree {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.75;
+      padding: 16px;
+      overflow: auto;
+      min-height: 400px;
+      flex: 1;
+    }
+
+    /* collapsible node wrapper */
+    .jn { display: block; }
+
+    /* the toggle arrow */
+    .jn-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      margin-right: 3px;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-radius: 3px;
+      transition: background 0.1s, color 0.1s;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+      user-select: none;
+      font-style: normal;
+      font-size: 10px;
+    }
+    .jn-toggle:hover { background: var(--bg3); color: var(--text); }
+    .jn-toggle::before { content: '▾'; }
+    .jn-toggle.collapsed::before { content: '▸'; }
+
+    /* children block */
+    .jn-children {
+      display: block;
+      padding-left: 20px;
+      border-left: 1px solid var(--border);
+      margin-left: 6px;
+    }
+    .jn-children.hidden { display: none; }
+
+    /* collapsed inline summary */
+    .jn-summary {
+      display: none;
+      color: var(--text-muted);
+      font-size: 0.85em;
+      cursor: pointer;
+    }
+    .jn-summary:hover { color: var(--text-dim); }
+    .jn-toggle.collapsed ~ .jn-summary { display: inline; }
+
+    /* syntax colors */
     .json-key    { color: #79b8ff; }
     .json-string { color: #9ecbff; }
     .json-number { color: #f0c040; }
     .json-bool   { color: #f97583; }
     .json-null   { color: #f97583; }
+    .json-brace  { color: var(--text-dim); }
 
     /* ── Toast ── */
     .toast {
@@ -431,6 +497,13 @@
   <button class="btn danger" id="btn-clear">
     <span>✕</span> Clear
   </button>
+  <div class="toolbar-sep" id="sep-fold" style="display:none"></div>
+  <button class="btn" id="btn-expand-all" title="Expand all nodes" style="display:none">
+    <span>⊞</span> Expand All
+  </button>
+  <button class="btn" id="btn-collapse-all" title="Collapse all nodes" style="display:none">
+    <span>⊟</span> Collapse All
+  </button>
 </div>
 
 <!-- Status Bar -->
@@ -568,28 +641,32 @@ Example:
   'use strict';
 
   // ── Elements ──────────────────────────────────────────────
-  const inputEl   = document.getElementById('input');
-  const outputEl  = document.getElementById('output');
-  const statusDot = document.getElementById('status-dot');
-  const statusMsg = document.getElementById('status-msg');
+  const inputEl     = document.getElementById('input');
+  const outputEl    = document.getElementById('output');
+  const statusDot   = document.getElementById('status-dot');
+  const statusMsg   = document.getElementById('status-msg');
   const statusStats = document.getElementById('status-stats');
-  const indentSel = document.getElementById('indent-select');
-  const toast     = document.getElementById('toast');
+  const indentSel   = document.getElementById('indent-select');
+  const toast       = document.getElementById('toast');
+  const btnExpandAll   = document.getElementById('btn-expand-all');
+  const btnCollapseAll = document.getElementById('btn-collapse-all');
+  const sepFold        = document.getElementById('sep-fold');
 
-  // ── Helpers ───────────────────────────────────────────────
+  // ── Toast ─────────────────────────────────────────────────
   let toastTimer;
   function showToast(msg, type = 'success') {
     clearTimeout(toastTimer);
     toast.textContent = msg;
-    toast.className = `toast ${type} show`;
+    toast.className = 'toast ' + type + ' show';
     toastTimer = setTimeout(() => { toast.className = 'toast'; }, 2000);
   }
 
-  function setStatus(ok, msg, stats = '') {
+  // ── Status Bar ────────────────────────────────────────────
+  function setStatus(ok, msg, stats) {
     statusDot.className = 'status-dot ' + (ok === null ? '' : ok ? 'ok' : 'err');
     statusMsg.className = 'status-msg ' + (ok === null ? '' : ok ? 'ok' : 'err');
     statusMsg.textContent = msg;
-    statusStats.textContent = stats;
+    statusStats.textContent = stats || '';
   }
 
   function getIndent() {
@@ -597,28 +674,184 @@ Example:
     return v === 'tab' ? '\t' : Number(v);
   }
 
-  // ── Syntax Highlighter ────────────────────────────────────
-  function highlight(json) {
-    // Escape HTML first
-    json = json
+  // ── Show / hide fold buttons ──────────────────────────────
+  function showFoldButtons(show) {
+    const d = show ? '' : 'none';
+    btnExpandAll.style.display = d;
+    btnCollapseAll.style.display = d;
+    sepFold.style.display = d;
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // JSON Tree Renderer
+  // Builds an interactive DOM tree with collapse/expand.
+  // Each object/array gets a toggle arrow; primitives are inline.
+  // ─────────────────────────────────────────────────────────
+
+  function esc(s) {
+    return String(s)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
 
-    return json.replace(
-      /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-      function (match) {
-        let cls = 'json-number';
-        if (/^"/.test(match)) {
-          cls = /:$/.test(match) ? 'json-key' : 'json-string';
-        } else if (/true|false/.test(match)) {
-          cls = 'json-bool';
-        } else if (/null/.test(match)) {
-          cls = 'json-null';
-        }
-        return `<span class="${cls}">${match}</span>`;
+  // Returns a summary string shown when a node is collapsed
+  function summarize(val) {
+    if (Array.isArray(val)) {
+      const len = val.length;
+      return len === 0 ? '[ ]' : '[ ' + len + ' item' + (len > 1 ? 's' : '') + ' ]';
+    }
+    if (val !== null && typeof val === 'object') {
+      const keys = Object.keys(val);
+      const len = keys.length;
+      return len === 0 ? '{ }' : '{ ' + len + ' key' + (len > 1 ? 's' : '') + ' }';
+    }
+    return '';
+  }
+
+  // Render a single JSON value node into a DocumentFragment / Element
+  // `key`   — string key label (already HTML-escaped), or null for root/array items
+  // `val`   — parsed JS value
+  // `comma` — whether to append trailing comma
+  function renderNode(key, val, comma) {
+    const isObj   = val !== null && typeof val === 'object' && !Array.isArray(val);
+    const isArr   = Array.isArray(val);
+    const isLeaf  = !isObj && !isArr;
+
+    const line = document.createElement('div');
+    line.className = 'jn';
+
+    // ── Key label (only for object children) ──
+    let keyHtml = '';
+    if (key !== null) {
+      keyHtml = '<span class="json-key">&quot;' + esc(key) + '&quot;</span>'
+              + '<span class="json-brace">: </span>';
+    }
+
+    if (isLeaf) {
+      // ── Leaf: just colored value ──
+      let valHtml;
+      if (typeof val === 'string') {
+        valHtml = '<span class="json-string">&quot;' + esc(val) + '&quot;</span>';
+      } else if (typeof val === 'number') {
+        valHtml = '<span class="json-number">' + esc(val) + '</span>';
+      } else if (typeof val === 'boolean') {
+        valHtml = '<span class="json-bool">' + val + '</span>';
+      } else {
+        valHtml = '<span class="json-null">null</span>';
       }
-    );
+      line.innerHTML = keyHtml + valHtml + (comma ? '<span class="json-brace">,</span>' : '');
+      return line;
+    }
+
+    // ── Collapsible: object or array ──
+    const openBrace  = isArr ? '[' : '{';
+    const closeBrace = isArr ? ']' : '}';
+    const entries    = isArr ? val : Object.entries(val);
+    const isEmpty    = entries.length === 0;
+    const summary    = summarize(val);
+
+    if (isEmpty) {
+      // Empty object/array — no toggle needed
+      line.innerHTML = keyHtml
+        + '<span class="json-brace">' + openBrace + closeBrace + '</span>'
+        + (comma ? '<span class="json-brace">,</span>' : '');
+      return line;
+    }
+
+    // Header row: ▾ key: { … summary }
+    const header = document.createElement('div');
+    header.style.cssText = 'display:inline';
+
+    const toggle = document.createElement('span');
+    toggle.className = 'jn-toggle';
+    toggle.title = 'Click to collapse';
+
+    const summarySpan = document.createElement('span');
+    summarySpan.className = 'jn-summary';
+    summarySpan.textContent = summary + (comma ? ',' : '');
+
+    header.appendChild(toggle);
+    if (key !== null) {
+      const keyNode = document.createElement('span');
+      keyNode.innerHTML = keyHtml;
+      header.appendChild(keyNode);
+    }
+    header.insertAdjacentHTML('beforeend',
+      '<span class="json-brace">' + openBrace + '</span>');
+    header.appendChild(summarySpan);
+
+    // Children container
+    const children = document.createElement('div');
+    children.className = 'jn-children';
+
+    if (isArr) {
+      val.forEach((item, i) => {
+        children.appendChild(renderNode(null, item, i < val.length - 1));
+      });
+    } else {
+      const keys = Object.keys(val);
+      keys.forEach((k, i) => {
+        children.appendChild(renderNode(k, val[k], i < keys.length - 1));
+      });
+    }
+
+    // Closing brace row
+    const closeRow = document.createElement('span');
+    closeRow.innerHTML = '<span class="json-brace">' + closeBrace + '</span>'
+                       + (comma ? '<span class="json-brace">,</span>' : '');
+
+    // Toggle click handler
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const collapsed = toggle.classList.toggle('collapsed');
+      toggle.title = collapsed ? 'Click to expand' : 'Click to collapse';
+      children.classList.toggle('hidden', collapsed);
+      closeRow.style.display = collapsed ? 'none' : '';
+    });
+
+    // Click on summary to expand
+    summarySpan.addEventListener('click', () => {
+      toggle.classList.remove('collapsed');
+      toggle.title = 'Click to collapse';
+      children.classList.remove('hidden');
+      closeRow.style.display = '';
+    });
+
+    line.appendChild(header);
+    line.appendChild(children);
+    line.appendChild(closeRow);
+    return line;
+  }
+
+  // Build full tree DOM from parsed value
+  function buildTree(parsed) {
+    const wrap = document.createElement('div');
+    wrap.className = 'json-tree';
+    wrap.appendChild(renderNode(null, parsed, false));
+    return wrap;
+  }
+
+  // ── Expand / Collapse All ─────────────────────────────────
+  function setAllCollapsed(collapsed) {
+    outputEl.querySelectorAll('.jn-toggle').forEach(toggle => {
+      const children = toggle.closest('.jn').querySelector('.jn-children');
+      const closeRow = toggle.closest('.jn').querySelector(':scope > span:last-child');
+      toggle.classList.toggle('collapsed', collapsed);
+      toggle.title = collapsed ? 'Click to expand' : 'Click to collapse';
+      if (children) children.classList.toggle('hidden', collapsed);
+      if (closeRow) closeRow.style.display = collapsed ? 'none' : '';
+    });
+  }
+
+  // ── Copy: extract plain text from tree ────────────────────
+  function getOutputText() {
+    // If there's a .json-tree, reconstruct JSON string from the stored data
+    if (window._lastParsed !== undefined) {
+      return JSON.stringify(window._lastParsed, null, getIndent());
+    }
+    return outputEl.innerText || outputEl.textContent;
   }
 
   // ── Core: Format ──────────────────────────────────────────
@@ -628,46 +861,66 @@ Example:
       setStatus(null, 'Input is empty.');
       outputEl.innerHTML = '';
       outputEl.className = 'output-area';
+      showFoldButtons(false);
+      window._lastParsed = undefined;
       return;
     }
     try {
       const parsed = JSON.parse(raw);
-      const formatted = JSON.stringify(parsed, null, getIndent());
-      outputEl.innerHTML = highlight(formatted);
-      outputEl.className = 'output-area';
+      window._lastParsed = parsed;
 
+      outputEl.innerHTML = '';
+      outputEl.className = 'output-area';
+      outputEl.appendChild(buildTree(parsed));
+      showFoldButtons(true);
+
+      const formatted = JSON.stringify(parsed, null, getIndent());
       const lines = formatted.split('\n').length;
       const bytes = new Blob([formatted]).size;
       const kb = bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB';
-      setStatus(true, '✓ Valid JSON', `${lines} lines · ${kb}`);
+      setStatus(true, '✓ Valid JSON', lines + ' lines · ' + kb);
     } catch (e) {
-      outputEl.textContent = e.message;
+      window._lastParsed = undefined;
       outputEl.className = 'output-area has-error';
+      outputEl.textContent = e.message;
+      showFoldButtons(false);
       setStatus(false, '✗ ' + e.message);
     }
   }
 
-  // ── Core: Minify ─────────────────────────────────────────
+  // ── Core: Minify ──────────────────────────────────────────
   function doMinify() {
     const raw = inputEl.value.trim();
     if (!raw) { setStatus(null, 'Input is empty.'); return; }
     try {
       const parsed = JSON.parse(raw);
       const minified = JSON.stringify(parsed);
-      outputEl.textContent = minified;
+      window._lastParsed = undefined;
+      outputEl.className = 'output-area has-error'; // reuse monospace style, no red
       outputEl.className = 'output-area';
+      outputEl.style.cssText = '';
+
+      // Plain pre-formatted text for minified output
+      const pre = document.createElement('pre');
+      pre.style.cssText = 'padding:16px;font-family:var(--font-mono);font-size:13px;line-height:1.7;flex:1;overflow:auto;word-break:break-all;white-space:pre-wrap;';
+      pre.textContent = minified;
+      outputEl.innerHTML = '';
+      outputEl.appendChild(pre);
+      showFoldButtons(false);
+
       const bytes = new Blob([minified]).size;
-      setStatus(true, '✓ Minified', new Blob([minified]).size < 1024
-        ? bytes + ' B'
-        : (bytes / 1024).toFixed(1) + ' KB');
+      const kb = bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB';
+      setStatus(true, '✓ Minified', kb);
     } catch (e) {
-      outputEl.textContent = e.message;
+      window._lastParsed = undefined;
       outputEl.className = 'output-area has-error';
+      outputEl.textContent = e.message;
+      showFoldButtons(false);
       setStatus(false, '✗ ' + e.message);
     }
   }
 
-  // ── Core: Validate ───────────────────────────────────────
+  // ── Core: Validate ────────────────────────────────────────
   function doValidate() {
     const raw = inputEl.value.trim();
     if (!raw) { setStatus(null, 'Input is empty.'); return; }
@@ -681,9 +934,9 @@ Example:
     }
   }
 
-  // ── Copy ─────────────────────────────────────────────────
+  // ── Copy ──────────────────────────────────────────────────
   async function doCopy() {
-    const text = outputEl.innerText || outputEl.textContent;
+    const text = getOutputText();
     if (!text) { showToast('Nothing to copy', 'error'); return; }
     try {
       await navigator.clipboard.writeText(text);
@@ -693,9 +946,9 @@ Example:
     }
   }
 
-  // ── Download ─────────────────────────────────────────────
+  // ── Download ──────────────────────────────────────────────
   function doDownload() {
-    const text = outputEl.innerText || outputEl.textContent;
+    const text = getOutputText();
     if (!text) { showToast('Nothing to download', 'error'); return; }
     const blob = new Blob([text], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -707,16 +960,18 @@ Example:
     showToast('↓ Downloaded');
   }
 
-  // ── Clear ────────────────────────────────────────────────
+  // ── Clear ─────────────────────────────────────────────────
   function doClear() {
     inputEl.value = '';
     outputEl.innerHTML = '';
     outputEl.className = 'output-area';
+    window._lastParsed = undefined;
+    showFoldButtons(false);
     setStatus(null, 'Paste your JSON on the left and click Format →');
     inputEl.focus();
   }
 
-  // ── Sample ───────────────────────────────────────────────
+  // ── Sample ────────────────────────────────────────────────
   const SAMPLE = {
     "user": {
       "id": 1,
@@ -738,7 +993,7 @@ Example:
     }
   };
 
-  // ── Paste ────────────────────────────────────────────────
+  // ── Paste ─────────────────────────────────────────────────
   async function doPaste() {
     try {
       const text = await navigator.clipboard.readText();
@@ -759,12 +1014,15 @@ Example:
   document.getElementById('btn-download').addEventListener('click', doDownload);
   document.getElementById('btn-clear').addEventListener('click', doClear);
   document.getElementById('btn-paste').addEventListener('click', doPaste);
+  btnExpandAll.addEventListener('click', () => setAllCollapsed(false));
+  btnCollapseAll.addEventListener('click', () => setAllCollapsed(true));
+
   document.getElementById('btn-sample').addEventListener('click', () => {
     inputEl.value = JSON.stringify(SAMPLE);
     doFormat();
   });
 
-  // Keyboard shortcut: Ctrl/Cmd + Enter = Format
+  // Ctrl/Cmd + Enter → Format
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
@@ -772,7 +1030,7 @@ Example:
     }
   });
 
-  // Auto-format on paste into input
+  // Auto-format on paste
   inputEl.addEventListener('paste', () => {
     setTimeout(doFormat, 0);
   });
@@ -782,14 +1040,9 @@ Example:
     q.addEventListener('click', () => {
       const a = q.nextElementSibling;
       const isOpen = a.classList.contains('open');
-      // Close all
       document.querySelectorAll('.faq-a.open').forEach(el => el.classList.remove('open'));
       document.querySelectorAll('.faq-q.open').forEach(el => el.classList.remove('open'));
-      // Toggle current
-      if (!isOpen) {
-        a.classList.add('open');
-        q.classList.add('open');
-      }
+      if (!isOpen) { a.classList.add('open'); q.classList.add('open'); }
     });
   });
 
