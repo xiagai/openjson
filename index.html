@@ -997,7 +997,7 @@ Example:
   async function doPaste() {
     try {
       const text = await navigator.clipboard.readText();
-      inputEl.value = text;
+      setInputValue(text);
       doFormat();
     } catch {
       showToast('Clipboard access denied — paste manually', 'error');
@@ -1018,7 +1018,7 @@ Example:
   btnCollapseAll.addEventListener('click', () => setAllCollapsed(true));
 
   document.getElementById('btn-sample').addEventListener('click', () => {
-    inputEl.value = JSON.stringify(SAMPLE);
+    setInputValue(JSON.stringify(SAMPLE));
     doFormat();
   });
 
@@ -1030,10 +1030,23 @@ Example:
     }
   });
 
+  // ── Set textarea value while preserving undo history ────────
+  // Direct assignment (inputEl.value = x) wipes the browser undo stack.
+  // execCommand('insertText') pushes the change into the native undo stack
+  // so Ctrl+Z works after paste / programmatic changes.
+  function setInputValue(text) {
+    inputEl.focus();
+    inputEl.select();
+    // Modern approach: use execCommand to keep undo stack intact
+    const ok = document.execCommand('insertText', false, text);
+    if (!ok) {
+      // Fallback for browsers that don't support execCommand (rare)
+      inputEl.value = text;
+    }
+  }
+
   // Auto-format on paste
   // Listen at document level so user doesn't need to click the textarea first.
-  // Only trigger when the active element is the textarea itself, or when no
-  // interactive element is focused (i.e. user pastes anywhere on the page).
   document.addEventListener('paste', (e) => {
     const active = document.activeElement;
     const tag = active ? active.tagName : '';
@@ -1042,13 +1055,10 @@ Example:
         (tag === 'INPUT' || tag === 'TEXTAREA' || active.isContentEditable)) {
       return;
     }
-    // Get text from clipboard
     const text = e.clipboardData && e.clipboardData.getData('text');
     if (!text) return;
-    // Put text into the input and format
     e.preventDefault();
-    inputEl.value = text;
-    inputEl.focus();
+    setInputValue(text);
     doFormat();
   });
 
