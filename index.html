@@ -267,7 +267,33 @@
     }
 
     /* collapsible node wrapper */
-    .jn { display: block; }
+    .jn { display: block; position: relative; }
+    .jn:hover > .jn-copy-btn,
+    .jn:hover > div > .jn-copy-btn { opacity: 1; pointer-events: auto; }
+
+    /* per-node copy button */
+    .jn-copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-left: 8px;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .jn-copy-btn:hover { color: var(--text); border-color: var(--accent); background: var(--bg2); }
 
     /* the toggle arrow */
     .jn-toggle {
@@ -710,6 +736,35 @@ Example:
     return '';
   }
 
+  // ── Per-node copy helper ─────────────────────────────────
+  function makeCopyBtn(val) {
+    const btn = document.createElement('span');
+    btn.className = 'jn-copy-btn';
+    btn.title = 'Copy value';
+    btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/><path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h-1v1H2V6h1V5H2z"/></svg> copy';
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      let text;
+      if (val !== null && typeof val === 'object') {
+        text = JSON.stringify(val, null, getIndent());
+      } else if (typeof val === 'string') {
+        text = val; // copy raw string without quotes
+      } else {
+        text = String(val);
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        const prev = btn.innerHTML;
+        btn.innerHTML = '✓ copied';
+        btn.style.color = 'var(--green)';
+        setTimeout(() => { btn.innerHTML = prev; btn.style.color = ''; }, 1200);
+      } catch {
+        showToast('Copy failed', 'error');
+      }
+    });
+    return btn;
+  }
+
   // Render a single JSON value node into a DocumentFragment / Element
   // `key`   — string key label (already HTML-escaped), or null for root/array items
   // `val`   — parsed JS value
@@ -742,6 +797,8 @@ Example:
         valHtml = '<span class="json-null">null</span>';
       }
       line.innerHTML = keyHtml + valHtml + (comma ? '<span class="json-brace">,</span>' : '');
+      // only add copy btn when there's a key (object field) or always for root-level leaves
+      if (key !== null || val !== null) line.appendChild(makeCopyBtn(val));
       return line;
     }
 
@@ -757,6 +814,7 @@ Example:
       line.innerHTML = keyHtml
         + '<span class="json-brace">' + openBrace + closeBrace + '</span>'
         + (comma ? '<span class="json-brace">,</span>' : '');
+      line.appendChild(makeCopyBtn(val));
       return line;
     }
 
@@ -781,6 +839,7 @@ Example:
     header.insertAdjacentHTML('beforeend',
       '<span class="json-brace">' + openBrace + '</span>');
     header.appendChild(summarySpan);
+    header.appendChild(makeCopyBtn(val));
 
     // Children container
     const children = document.createElement('div');
