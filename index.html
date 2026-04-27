@@ -735,6 +735,8 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #3e4460; }
   </style>
+  <!-- pako: gzip compress/decompress in browser -->
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 </head>
 <body>
 
@@ -788,6 +790,10 @@
   <div class="toolbar-sep"></div>
   <button class="btn danger" id="btn-clear">
     <span>✕</span> Clear
+  </button>
+  <div class="toolbar-sep"></div>
+  <button class="btn" id="btn-share" title="Copy shareable link with current JSON">
+    <span>🔗</span> Share
   </button>
   <div class="toolbar-sep" id="sep-fold" style="display:none"></div>
   <button class="btn" id="btn-expand-all" title="Expand all nodes" style="display:none">
@@ -1517,6 +1523,55 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
   document.getElementById('btn-copy').addEventListener('click', doCopy);
   document.getElementById('btn-copy2').addEventListener('click', doCopy);
   document.getElementById('btn-download').addEventListener('click', doDownload);
+
+  // ── Share: encode current input into URL ─────────────────
+  document.getElementById('btn-share').addEventListener('click', () => {
+    const raw = inputEl.value.trim();
+    if (!raw) { showToast('Nothing to share — paste some JSON first', 'error'); return; }
+    try {
+      // 1. gzip compress
+      const compressed = pako.deflate(raw);
+      // 2. base64url encode (URL-safe, no padding issues)
+      // Note: avoid spread operator for large arrays (stack overflow risk)
+      let binary = '';
+      compressed.forEach(b => { binary += String.fromCharCode(b); });
+      const b64 = btoa(binary)
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+      // 3. build URL
+      const url = location.origin + location.pathname + '?d=' + b64;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Share link copied! (' + b64.length + ' chars)');
+      }).catch(() => {
+        // fallback: prompt
+        prompt('Copy this link:', url);
+      });
+    } catch (e) {
+      showToast('Failed to generate link: ' + e.message, 'error');
+    }
+  });
+
+  // ── On load: restore JSON from URL ?d= param ─────────────
+  (function restoreFromUrl() {
+    try {
+      const params = new URLSearchParams(location.search);
+      const b64 = params.get('d');
+      if (!b64) return;
+      // decode base64url → Uint8Array
+      const b64std = b64.replace(/-/g, '+').replace(/_/g, '/');
+      const binary = atob(b64std);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      // decompress
+      const json = pako.inflate(bytes, { to: 'string' });
+      // set value and format
+      inputEl.value = json;
+      doFormat();
+      // clean URL without reloading (keeps it tidy after load)
+      history.replaceState(null, '', location.pathname);
+    } catch (e) {
+      console.warn('Failed to restore from URL:', e.message);
+    }
+  })();
   document.getElementById('btn-clear').addEventListener('click', doClear);
   document.getElementById('btn-paste').addEventListener('click', doPaste);
   btnExpandAll.addEventListener('click', () => setAllCollapsed(false));
