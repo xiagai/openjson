@@ -604,6 +604,113 @@
       .diff-pane { border-right: none; border-bottom: 1px solid var(--border); }
     }
 
+    /* ── Transform Panel ── */
+    .transform-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: var(--bg);
+    }
+
+    .transform-block {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .transform-block-header {
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg3);
+    }
+    .transform-block-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .transform-block-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .transform-block-desc code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0 4px;
+      font-family: var(--font-mono);
+      font-size: 0.82em;
+      color: var(--accent);
+    }
+
+    .transform-io {
+      display: grid;
+      grid-template-columns: 1fr 28px 1fr;
+      align-items: stretch;
+      min-height: 160px;
+    }
+    .transform-pane {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .transform-pane textarea {
+      flex: 1;
+      min-height: 120px;
+      resize: vertical;
+      background: var(--bg);
+      border: none;
+      border-top: 1px solid var(--border);
+      padding: 12px 14px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.65;
+      color: var(--text);
+      outline: none;
+    }
+    .transform-pane textarea[readonly] {
+      background: #0b0e18;
+      color: var(--text-dim);
+    }
+    .transform-pane textarea:focus { background: #0d101a; }
+
+    .transform-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--text-muted);
+      background: var(--bg2);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      user-select: none;
+    }
+
+    .transform-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .transform-status {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .transform-status.ok  { color: var(--green); }
+    .transform-status.err { color: var(--red);   }
+
+    @media (max-width: 700px) {
+      .transform-io { grid-template-columns: 1fr; }
+      .transform-arrow { display: none; }
+    }
+
     /* ── Footer ── */
     footer {
       border-top: 1px solid var(--border);
@@ -647,6 +754,7 @@
 <nav class="tab-nav">
   <button class="tab-btn active" data-tab="formatter">⚡ Formatter</button>
   <button class="tab-btn" data-tab="diff">⇄ Diff</button>
+  <button class="tab-btn" data-tab="transform">⚙ Transform</button>
 </nav>
 
 <!-- ═══════════════════ FORMATTER SECTION ═══════════════════ -->
@@ -880,6 +988,117 @@ Example:
 </div>
 
 </div><!-- /section-diff -->
+
+<!-- ═══════════════════ TRANSFORM SECTION ═══════════════════ -->
+<div class="page-section" id="section-transform">
+
+<div class="diff-toolbar">
+  <span style="font-size:0.82rem;color:var(--text-muted);font-weight:600">⚙ JSON Transform Tools</span>
+</div>
+
+<div class="transform-area">
+
+  <!-- Block 1: Minify / Compress -->
+  <div class="transform-block">
+    <div class="transform-block-header">
+      <div class="transform-block-title">⇒ Minify / Compress</div>
+      <div class="transform-block-desc">Remove all whitespace from JSON. Useful for API payloads and storage.</div>
+    </div>
+    <div class="transform-io">
+      <div class="transform-pane">
+        <div class="pane-header"><span>Input JSON</span>
+          <div class="pane-actions">
+            <button class="icon-btn" id="tr-minify-paste">📋 Paste</button>
+            <button class="icon-btn" id="tr-minify-sample">Sample</button>
+          </div>
+        </div>
+        <textarea id="tr-minify-in" placeholder='Paste JSON here...' spellcheck="false" autocomplete="off"></textarea>
+      </div>
+      <div class="transform-arrow">⇒</div>
+      <div class="transform-pane">
+        <div class="pane-header"><span>Minified Output</span>
+          <div class="pane-actions">
+            <button class="icon-btn" id="tr-minify-copy">⎘ Copy</button>
+          </div>
+        </div>
+        <textarea id="tr-minify-out" readonly placeholder='Minified JSON appears here...' spellcheck="false"></textarea>
+      </div>
+    </div>
+    <div class="transform-actions">
+      <button class="btn primary" id="tr-minify-run">⇒ Minify</button>
+      <span class="transform-status" id="tr-minify-status"></span>
+    </div>
+  </div>
+
+  <!-- Block 2: Unescape -->
+  <div class="transform-block">
+    <div class="transform-block-header">
+      <div class="transform-block-title">↩ Unescape JSON String</div>
+      <div class="transform-block-desc">Convert an escaped JSON string (e.g. <code>"{\"a\":1}"</code>) into a readable JSON object.</div>
+    </div>
+    <div class="transform-io">
+      <div class="transform-pane">
+        <div class="pane-header"><span>Escaped String Input</span>
+          <div class="pane-actions">
+            <button class="icon-btn" id="tr-unescape-paste">📋 Paste</button>
+            <button class="icon-btn" id="tr-unescape-sample">Sample</button>
+          </div>
+        </div>
+        <textarea id="tr-unescape-in" placeholder='Paste escaped JSON string here...
+
+Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off"></textarea>
+      </div>
+      <div class="transform-arrow">↩</div>
+      <div class="transform-pane">
+        <div class="pane-header"><span>Unescaped JSON</span>
+          <div class="pane-actions">
+            <button class="icon-btn" id="tr-unescape-copy">⎘ Copy</button>
+          </div>
+        </div>
+        <textarea id="tr-unescape-out" readonly placeholder='Unescaped JSON appears here...' spellcheck="false"></textarea>
+      </div>
+    </div>
+    <div class="transform-actions">
+      <button class="btn primary" id="tr-unescape-run">↩ Unescape</button>
+      <span class="transform-status" id="tr-unescape-status"></span>
+    </div>
+  </div>
+
+  <!-- Block 3: Escape -->
+  <div class="transform-block">
+    <div class="transform-block-header">
+      <div class="transform-block-title">↪ Escape JSON to String</div>
+      <div class="transform-block-desc">Serialize a JSON object into an escaped string. Useful for embedding JSON inside another JSON field or query parameter.</div>
+    </div>
+    <div class="transform-io">
+      <div class="transform-pane">
+        <div class="pane-header"><span>JSON Input</span>
+          <div class="pane-actions">
+            <button class="icon-btn" id="tr-escape-paste">📋 Paste</button>
+            <button class="icon-btn" id="tr-escape-sample">Sample</button>
+          </div>
+        </div>
+        <textarea id="tr-escape-in" placeholder='Paste JSON here...' spellcheck="false" autocomplete="off"></textarea>
+      </div>
+      <div class="transform-arrow">↪</div>
+      <div class="transform-pane">
+        <div class="pane-header"><span>Escaped String Output</span>
+          <div class="pane-actions">
+            <button class="icon-btn" id="tr-escape-copy">⎘ Copy</button>
+          </div>
+        </div>
+        <textarea id="tr-escape-out" readonly placeholder='Escaped JSON string appears here...' spellcheck="false"></textarea>
+      </div>
+    </div>
+    <div class="transform-actions">
+      <button class="btn primary" id="tr-escape-run">↪ Escape</button>
+      <span class="transform-status" id="tr-escape-status"></span>
+    </div>
+  </div>
+
+</div><!-- /transform-area -->
+
+</div><!-- /section-transform -->
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
@@ -1758,6 +1977,161 @@ Example:
   document.getElementById('diff-sample-b').addEventListener('click', () => {
     diffInputB.value = JSON.stringify(DIFF_SAMPLE_B, null, 2);
     scheduleDiff();
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // TRANSFORM PANEL
+  // ═══════════════════════════════════════════════════════════
+
+  const TR_SAMPLE = { "name": "Alice", "age": 30, "hobbies": ["coding", "reading"], "address": { "city": "NYC", "zip": "10001" } };
+
+  // ── Generic helper: set status label ──
+  function trStatus(el, ok, msg) {
+    el.textContent = ok ? '✓ ' + msg : '✗ ' + msg;
+    el.className = 'transform-status ' + (ok ? 'ok' : 'err');
+  }
+
+  // ── Generic helper: copy textarea value ──
+  async function trCopy(textarea, statusEl) {
+    const text = textarea.value;
+    if (!text) { showToast('Nothing to copy', 'error'); return; }
+    try {
+      await navigator.clipboard.writeText(text);
+      const prev = statusEl.textContent;
+      const prevClass = statusEl.className;
+      statusEl.textContent = '✓ Copied!';
+      statusEl.className = 'transform-status ok';
+      setTimeout(() => { statusEl.textContent = prev; statusEl.className = prevClass; }, 1500);
+    } catch {
+      showToast('Copy failed', 'error');
+    }
+  }
+
+  // ── Generic helper: paste from clipboard into textarea ──
+  async function trPaste(textarea) {
+    try {
+      const text = await navigator.clipboard.readText();
+      textarea.value = text;
+      textarea.dispatchEvent(new Event('input'));
+    } catch {
+      showToast('Clipboard access denied — paste manually', 'error');
+      textarea.focus();
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Block 1: Minify / Compress
+  // ─────────────────────────────────────────────────────────
+  const trMinifyIn  = document.getElementById('tr-minify-in');
+  const trMinifyOut = document.getElementById('tr-minify-out');
+  const trMinifySt  = document.getElementById('tr-minify-status');
+
+  function doTrMinify() {
+    const raw = trMinifyIn.value.trim();
+    if (!raw) { trMinifyOut.value = ''; trMinifySt.textContent = ''; return; }
+    try {
+      const parsed = JSON.parse(raw);
+      const minified = JSON.stringify(parsed);
+      trMinifyOut.value = minified;
+      const saved = raw.length - minified.length;
+      trStatus(trMinifySt, true, minified.length + ' chars' + (saved > 0 ? ' (saved ' + saved + ')' : ''));
+    } catch (e) {
+      trMinifyOut.value = '';
+      trStatus(trMinifySt, false, e.message);
+    }
+  }
+
+  document.getElementById('tr-minify-run').addEventListener('click', doTrMinify);
+  trMinifyIn.addEventListener('input', doTrMinify);
+  document.getElementById('tr-minify-paste').addEventListener('click', () => trPaste(trMinifyIn));
+  document.getElementById('tr-minify-copy').addEventListener('click', () => trCopy(trMinifyOut, trMinifySt));
+  document.getElementById('tr-minify-sample').addEventListener('click', () => {
+    trMinifyIn.value = JSON.stringify(TR_SAMPLE, null, 2);
+    doTrMinify();
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // Block 2: Unescape
+  // Input: a JSON string value that itself contains an escaped JSON
+  // e.g.  "{\"name\":\"Alice\"}"   or   {\"name\":\"Alice\"}  (with or without outer quotes)
+  // Output: pretty-printed JSON object
+  // ─────────────────────────────────────────────────────────
+  const trUnescapeIn  = document.getElementById('tr-unescape-in');
+  const trUnescapeOut = document.getElementById('tr-unescape-out');
+  const trUnescapeSt  = document.getElementById('tr-unescape-status');
+
+  function doTrUnescape() {
+    const raw = trUnescapeIn.value.trim();
+    if (!raw) { trUnescapeOut.value = ''; trUnescapeSt.textContent = ''; return; }
+    try {
+      let inner;
+      // Strategy 1: treat the whole input as a JSON string literal (quoted or not)
+      // Try parsing directly first — if input is already a valid JSON, just pretty-print
+      try {
+        inner = JSON.parse(raw);
+        // If it parsed to a string, parse the string again
+        if (typeof inner === 'string') {
+          inner = JSON.parse(inner);
+        }
+      } catch {
+        // Strategy 2: input is an escaped string WITHOUT outer quotes
+        // e.g.  {\"name\":\"Alice\"}  →  {"name":"Alice"}
+        // Replace \" → " and \\ → \ then parse
+        const unslashed = raw.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+        inner = JSON.parse(unslashed);
+        if (typeof inner === 'string') inner = JSON.parse(inner);
+      }
+      const indent = getIndent();
+      trUnescapeOut.value = JSON.stringify(inner, null, indent);
+      trStatus(trUnescapeSt, true, 'Unescaped successfully');
+    } catch (e) {
+      trUnescapeOut.value = '';
+      trStatus(trUnescapeSt, false, e.message);
+    }
+  }
+
+  document.getElementById('tr-unescape-run').addEventListener('click', doTrUnescape);
+  trUnescapeIn.addEventListener('input', doTrUnescape);
+  document.getElementById('tr-unescape-paste').addEventListener('click', () => trPaste(trUnescapeIn));
+  document.getElementById('tr-unescape-copy').addEventListener('click', () => trCopy(trUnescapeOut, trUnescapeSt));
+  document.getElementById('tr-unescape-sample').addEventListener('click', () => {
+    // Sample: a JSON string containing escaped JSON
+    trUnescapeIn.value = JSON.stringify(JSON.stringify(TR_SAMPLE));
+    doTrUnescape();
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // Block 3: Escape JSON to String
+  // Input: JSON object/array
+  // Output: escaped JSON string (the whole thing as a JS/JSON string literal)
+  // ─────────────────────────────────────────────────────────
+  const trEscapeIn  = document.getElementById('tr-escape-in');
+  const trEscapeOut = document.getElementById('tr-escape-out');
+  const trEscapeSt  = document.getElementById('tr-escape-status');
+
+  function doTrEscape() {
+    const raw = trEscapeIn.value.trim();
+    if (!raw) { trEscapeOut.value = ''; trEscapeSt.textContent = ''; return; }
+    try {
+      const parsed = JSON.parse(raw);
+      // JSON.stringify(parsed) gives the minified JSON;
+      // JSON.stringify(that string) wraps it in quotes with all escapes applied
+      const escaped = JSON.stringify(JSON.stringify(parsed));
+      trEscapeOut.value = escaped;
+      trStatus(trEscapeSt, true, escaped.length + ' chars');
+    } catch (e) {
+      trEscapeOut.value = '';
+      trStatus(trEscapeSt, false, e.message);
+    }
+  }
+
+  document.getElementById('tr-escape-run').addEventListener('click', doTrEscape);
+  trEscapeIn.addEventListener('input', doTrEscape);
+  document.getElementById('tr-escape-paste').addEventListener('click', () => trPaste(trEscapeIn));
+  document.getElementById('tr-escape-copy').addEventListener('click', () => trCopy(trEscapeOut, trEscapeSt));
+  document.getElementById('tr-escape-sample').addEventListener('click', () => {
+    trEscapeIn.value = JSON.stringify(TR_SAMPLE, null, 2);
+    doTrEscape();
   });
 
 })();
