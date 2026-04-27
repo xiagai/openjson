@@ -29,7 +29,13 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
+    /* ══════════════════════════════════════════════
+       THEME SYSTEM
+       Applied via  data-theme="..."  on <html>
+       ══════════════════════════════════════════════ */
+
+    /* ── Default / Dark (Midnight) ── */
+    :root, [data-theme="dark"] {
       --bg: #0f1117;
       --bg2: #1a1d27;
       --bg3: #22263a;
@@ -44,6 +50,118 @@
       --text-muted: #4a5269;
       --radius: 10px;
       --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+      --scrollbar-thumb: #3e4460;
+      --btn-hover-bg: #2a2f45;
+      --btn-hover-border: #3e4460;
+    }
+
+    /* ── Light (Cloud) ── */
+    [data-theme="light"] {
+      --bg: #f5f7fa;
+      --bg2: #ffffff;
+      --bg3: #edf0f5;
+      --border: #d3d9e4;
+      --accent: #2563eb;
+      --accent-dim: #bfdbfe;
+      --green: #16a34a;
+      --red: #dc2626;
+      --yellow: #d97706;
+      --text: #1e293b;
+      --text-dim: #64748b;
+      --text-muted: #94a3b8;
+      --scrollbar-thumb: #c1c9d6;
+      --btn-hover-bg: #e8edf5;
+      --btn-hover-border: #b0bac9;
+    }
+
+    /* ── Mocha (Coffee) ── */
+    [data-theme="mocha"] {
+      --bg: #1e1a18;
+      --bg2: #28221f;
+      --bg3: #342b26;
+      --border: #4a3c34;
+      --accent: #e8a87c;
+      --accent-dim: #7a4a30;
+      --green: #85b895;
+      --red: #e07070;
+      --yellow: #e6c97a;
+      --text: #f0e6dc;
+      --text-dim: #9e8878;
+      --text-muted: #6a5448;
+      --scrollbar-thumb: #5a4840;
+      --btn-hover-bg: #3e3028;
+      --btn-hover-border: #6a5448;
+    }
+
+    /* ── Ocean (Deep Sea) ── */
+    [data-theme="ocean"] {
+      --bg: #0d1b2a;
+      --bg2: #112236;
+      --bg3: #162d44;
+      --border: #1e3d5a;
+      --accent: #38bdf8;
+      --accent-dim: #0e4a6e;
+      --green: #34d399;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --text: #e0f2fe;
+      --text-dim: #7aaec8;
+      --text-muted: #3a6882;
+      --scrollbar-thumb: #2a5070;
+      --btn-hover-bg: #1e3d5a;
+      --btn-hover-border: #2a6080;
+    }
+
+    /* ── Solarized Dark ── */
+    [data-theme="solarized"] {
+      --bg: #002b36;
+      --bg2: #073642;
+      --bg3: #0d4555;
+      --border: #1c5565;
+      --accent: #268bd2;
+      --accent-dim: #0a3a5a;
+      --green: #859900;
+      --red: #dc322f;
+      --yellow: #b58900;
+      --text: #839496;
+      --text-dim: #586e75;
+      --text-muted: #3a5060;
+      --scrollbar-thumb: #2a5060;
+      --btn-hover-bg: #0d4555;
+      --btn-hover-border: #2a6070;
+    }
+
+    /* ── Theme Switcher ── */
+    .theme-switcher {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .theme-swatch {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+      outline: none;
+      position: relative;
+    }
+    .theme-swatch:hover { transform: scale(1.2); }
+    .theme-swatch.active {
+      border-color: var(--accent);
+      transform: scale(1.15);
+    }
+    .theme-swatch[data-theme-name="dark"]      { background: radial-gradient(circle at 35% 35%, #22263a, #0f1117); }
+    .theme-swatch[data-theme-name="light"]     { background: radial-gradient(circle at 35% 35%, #ffffff, #d3d9e4); }
+    .theme-swatch[data-theme-name="mocha"]     { background: radial-gradient(circle at 35% 35%, #342b26, #1e1a18); }
+    .theme-swatch[data-theme-name="ocean"]     { background: radial-gradient(circle at 35% 35%, #162d44, #0d1b2a); }
+    .theme-swatch[data-theme-name="solarized"] { background: radial-gradient(circle at 35% 35%, #073642, #002b36); }
+    .theme-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-right: 2px;
+      white-space: nowrap;
     }
 
     html { font-size: 14px; }
@@ -128,7 +246,7 @@
       transition: all 0.15s;
       white-space: nowrap;
     }
-    .btn:hover { background: #2a2f45; border-color: #3e4460; }
+    .btn:hover { background: var(--btn-hover-bg); border-color: var(--btn-hover-border); }
     .btn:active { transform: scale(0.97); }
     .btn.primary {
       background: var(--accent);
@@ -237,7 +355,7 @@
       min-height: 400px;
     }
     textarea::placeholder { color: var(--text-muted); }
-    textarea:focus { background: #0d101a; }
+    textarea:focus { background: var(--bg3); }
 
     .output-area {
       flex: 1;
@@ -337,12 +455,48 @@
     .jn-summary:hover { color: var(--text-dim); }
     .jn-toggle.collapsed ~ .jn-summary { display: inline; }
 
-    /* syntax colors */
-    .json-key    { color: #79b8ff; }
-    .json-string { color: #9ecbff; }
-    .json-number { color: #f0c040; }
-    .json-bool   { color: #f97583; }
-    .json-null   { color: #f97583; }
+    /* ── JSON syntax colors (theme-aware via CSS vars) ── */
+    :root, [data-theme="dark"] {
+      --json-key:    #79b8ff;
+      --json-string: #9ecbff;
+      --json-number: #f0c040;
+      --json-bool:   #f97583;
+      --json-null:   #f97583;
+    }
+    [data-theme="light"] {
+      --json-key:    #2563eb;
+      --json-string: #0a7a4f;
+      --json-number: #b45309;
+      --json-bool:   #9333ea;
+      --json-null:   #dc2626;
+    }
+    [data-theme="mocha"] {
+      --json-key:    #e8a87c;
+      --json-string: #a8d8a8;
+      --json-number: #e6c97a;
+      --json-bool:   #e07070;
+      --json-null:   #e07070;
+    }
+    [data-theme="ocean"] {
+      --json-key:    #38bdf8;
+      --json-string: #6ee7b7;
+      --json-number: #fbbf24;
+      --json-bool:   #f87171;
+      --json-null:   #f87171;
+    }
+    [data-theme="solarized"] {
+      --json-key:    #268bd2;
+      --json-string: #2aa198;
+      --json-number: #b58900;
+      --json-bool:   #dc322f;
+      --json-null:   #cb4b16;
+    }
+
+    .json-key    { color: var(--json-key); }
+    .json-string { color: var(--json-string); }
+    .json-number { color: var(--json-number); }
+    .json-bool   { color: var(--json-bool); }
+    .json-null   { color: var(--json-null); }
     .json-brace  { color: var(--text-dim); }
 
     /* ── Toast ── */
@@ -674,10 +828,11 @@
       outline: none;
     }
     .transform-pane textarea[readonly] {
-      background: #0b0e18;
+      background: var(--bg);
       color: var(--text-dim);
+      opacity: 0.85;
     }
-    .transform-pane textarea:focus { background: #0d101a; }
+    .transform-pane textarea:focus { background: var(--bg3); }
 
     .transform-arrow {
       display: flex;
@@ -733,7 +888,7 @@
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3e4460; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb); }
   </style>
   <!-- pako: gzip compress/decompress in browser -->
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
@@ -748,6 +903,15 @@
   </a>
   <span class="header-tagline">— Online JSON Beautifier & Validator</span>
   <div class="header-right">
+    <!-- Theme Switcher -->
+    <div class="theme-switcher" id="theme-switcher" title="Switch theme">
+      <span class="theme-label">Theme:</span>
+      <button class="theme-swatch active" data-theme-name="dark"      title="Dark (Midnight)"></button>
+      <button class="theme-swatch"        data-theme-name="light"     title="Light (Cloud)"></button>
+      <button class="theme-swatch"        data-theme-name="mocha"     title="Mocha (Coffee)"></button>
+      <button class="theme-swatch"        data-theme-name="ocean"     title="Ocean (Deep Sea)"></button>
+      <button class="theme-swatch"        data-theme-name="solarized" title="Solarized"></button>
+    </div>
     <span class="badge">🔒 Data never leaves your browser</span>
   </div>
 </header>
@@ -2188,6 +2352,72 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
     trEscapeIn.value = JSON.stringify(TR_SAMPLE, null, 2);
     doTrEscape();
   });
+
+  // ═══════════════════════════════════════════════════════════
+  // THEME SYSTEM
+  // ═══════════════════════════════════════════════════════════
+
+  const VALID_THEMES = ['dark', 'light', 'mocha', 'ocean', 'solarized'];
+  const DEFAULT_THEME = 'dark';
+
+  // ── Apply theme to <html> and update URL + localStorage ──
+  function applyTheme(name, { updateUrl = true, saveLocal = true } = {}) {
+    if (!VALID_THEMES.includes(name)) name = DEFAULT_THEME;
+
+    // 1. Set data-theme on <html>
+    document.documentElement.setAttribute('data-theme', name);
+
+    // 2. Update swatch active state
+    document.querySelectorAll('.theme-swatch').forEach(sw => {
+      sw.classList.toggle('active', sw.dataset.themeName === name);
+    });
+
+    // 3. Persist to localStorage
+    if (saveLocal) {
+      try { localStorage.setItem('jf-theme', name); } catch {}
+    }
+
+    // 4. Reflect in URL as ?theme=... (but only when explicitly switching)
+    if (updateUrl) {
+      const params = new URLSearchParams(location.search);
+      if (name === DEFAULT_THEME) {
+        params.delete('theme');
+      } else {
+        params.set('theme', name);
+      }
+      const newSearch = params.toString() ? '?' + params.toString() : '';
+      history.replaceState(null, '', location.pathname + newSearch);
+    }
+  }
+
+  // ── Swatch click handlers ──
+  document.querySelectorAll('.theme-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      applyTheme(sw.dataset.themeName);
+      showToast('Theme: ' + sw.title);
+    });
+  });
+
+  // ── On load: read ?theme= param or localStorage ──
+  (function initTheme() {
+    const params = new URLSearchParams(location.search);
+    const urlTheme = params.get('theme');
+    let theme = DEFAULT_THEME;
+
+    if (urlTheme && VALID_THEMES.includes(urlTheme)) {
+      // URL param wins (e.g. a shared link with theme)
+      theme = urlTheme;
+    } else {
+      // Fall back to localStorage preference
+      try {
+        const saved = localStorage.getItem('jf-theme');
+        if (saved && VALID_THEMES.includes(saved)) theme = saved;
+      } catch {}
+    }
+
+    // Apply silently (don't update URL on initial load — keep it clean)
+    applyTheme(theme, { updateUrl: false, saveLocal: false });
+  })();
 
 })();
 </script>
