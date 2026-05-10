@@ -304,7 +304,7 @@
     .editor-area {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 6px 1fr;
       gap: 0;
       min-height: 0;
     }
@@ -312,9 +312,41 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
-      border-right: 1px solid var(--border);
     }
-    .editor-pane:last-child { border-right: none; }
+
+    /* ── Resizer / Splitter ── */
+    .editor-resizer {
+      width: 6px;
+      background: var(--border);
+      cursor: col-resize;
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .editor-resizer:hover,
+    .editor-resizer.dragging {
+      background: var(--accent-dim);
+    }
+    .editor-resizer::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 2px; height: 24px;
+      background: repeating-linear-gradient(
+        to bottom,
+        var(--text-muted) 0px, var(--text-muted) 2px,
+        transparent 2px, transparent 6px
+      );
+      border-radius: 1px;
+      opacity: 0;
+      transition: opacity 0.15s;
+      pointer-events: none;
+    }
+    .editor-resizer:hover::before,
+    .editor-resizer.dragging::before { opacity: 1; }
     .pane-header {
       display: flex;
       align-items: center;
@@ -879,7 +911,8 @@
     /* ── Responsive ── */
     @media (max-width: 768px) {
       .editor-area { grid-template-columns: 1fr; }
-      .editor-pane { border-right: none; border-bottom: 1px solid var(--border); }
+      .editor-resizer { display: none; }
+      .editor-pane { border-bottom: 1px solid var(--border); }
       .toolbar { padding: 8px 12px; }
       .header-tagline { display: none; }
     }
@@ -994,6 +1027,7 @@ Example:
       autocomplete="off"
     ></textarea>
   </div>
+  <div class="editor-resizer" id="editor-resizer"></div>
   <div class="editor-pane">
     <div class="pane-header">
       <span>Output</span>
@@ -1385,7 +1419,8 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
   // `key`   — string key label (already HTML-escaped), or null for root/array items
   // `val`   — parsed JS value
   // `comma` — whether to append trailing comma
-  function renderNode(key, val, comma) {
+  // `lazy`  — if true, children are not rendered until first expand
+  function renderNode(key, val, comma, lazy) {
     const isObj   = val !== null && typeof val === 'object' && !Array.isArray(val);
     const isArr   = Array.isArray(val);
     const isLeaf  = !isObj && !isArr;
@@ -1440,7 +1475,6 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
 
     const toggle = document.createElement('span');
     toggle.className = 'jn-toggle';
-    toggle.title = 'Click to collapse';
 
     const summarySpan = document.createElement('span');
     summarySpan.className = 'jn-summary';
@@ -1461,27 +1495,58 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
     const children = document.createElement('div');
     children.className = 'jn-children';
 
-    if (isArr) {
-      val.forEach((item, i) => {
-        children.appendChild(renderNode(null, item, i < val.length - 1));
-      });
-    } else {
-      const keys = Object.keys(val);
-      keys.forEach((k, i) => {
-        children.appendChild(renderNode(k, val[k], i < keys.length - 1));
-      });
-    }
-
     // Closing brace row
     const closeRow = document.createElement('span');
     closeRow.innerHTML = '<span class="json-brace">' + closeBrace + '</span>'
                        + (comma ? '<span class="json-brace">,</span>' : '');
+
+    function fillChildren() {
+      if (children.dataset.lazy !== 'true') return;
+      children.dataset.lazy = 'false';
+      const frag = document.createDocumentFragment();
+      if (isArr) {
+        val.forEach((item, i) => {
+          frag.appendChild(renderNode(null, item, i < val.length - 1, true));
+        });
+      } else {
+        const keys = Object.keys(val);
+        keys.forEach((k, i) => {
+          frag.appendChild(renderNode(k, val[k], i < keys.length - 1, true));
+        });
+      }
+      children.appendChild(frag);
+    }
+    children._fill = fillChildren;
+
+    if (lazy) {
+      // Start collapsed, children rendered on first expand
+      children.dataset.lazy = 'true';
+      toggle.classList.add('collapsed');
+      toggle.title = 'Click to expand';
+      children.classList.add('hidden');
+      closeRow.style.display = 'none';
+    } else {
+      // Render children immediately (used for root and depth-0 children)
+      children.dataset.lazy = 'false';
+      toggle.title = 'Click to collapse';
+      if (isArr) {
+        val.forEach((item, i) => {
+          children.appendChild(renderNode(null, item, i < val.length - 1, true));
+        });
+      } else {
+        const keys = Object.keys(val);
+        keys.forEach((k, i) => {
+          children.appendChild(renderNode(k, val[k], i < keys.length - 1, true));
+        });
+      }
+    }
 
     // Toggle click handler
     toggle.addEventListener('click', (e) => {
       e.stopPropagation();
       const collapsed = toggle.classList.toggle('collapsed');
       toggle.title = collapsed ? 'Click to expand' : 'Click to collapse';
+      if (!collapsed) fillChildren();
       children.classList.toggle('hidden', collapsed);
       closeRow.style.display = collapsed ? 'none' : '';
     });
@@ -1490,6 +1555,7 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
     summarySpan.addEventListener('click', () => {
       toggle.classList.remove('collapsed');
       toggle.title = 'Click to collapse';
+      fillChildren();
       children.classList.remove('hidden');
       closeRow.style.display = '';
     });
@@ -1504,20 +1570,26 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
   function buildTree(parsed) {
     const wrap = document.createElement('div');
     wrap.className = 'json-tree';
-    wrap.appendChild(renderNode(null, parsed, false));
+    // Root node is not lazy — renders its direct children immediately (collapsed)
+    wrap.appendChild(renderNode(null, parsed, false, false));
     return wrap;
   }
 
   // ── Expand / Collapse All ─────────────────────────────────
   function setAllCollapsed(collapsed) {
-    outputEl.querySelectorAll('.jn-toggle').forEach(toggle => {
-      const children = toggle.closest('.jn').querySelector('.jn-children');
-      const closeRow = toggle.closest('.jn').querySelector(':scope > span:last-child');
+    function processNode(jn) {
+      const toggle   = jn.querySelector(':scope > div > .jn-toggle');
+      const children = jn.querySelector(':scope > .jn-children');
+      const closeRow = jn.querySelector(':scope > span:last-child');
+      if (!toggle || !children) return;
+      if (!collapsed && children._fill) children._fill();
       toggle.classList.toggle('collapsed', collapsed);
       toggle.title = collapsed ? 'Click to expand' : 'Click to collapse';
-      if (children) children.classList.toggle('hidden', collapsed);
+      children.classList.toggle('hidden', collapsed);
       if (closeRow) closeRow.style.display = collapsed ? 'none' : '';
-    });
+      children.querySelectorAll(':scope > .jn').forEach(processNode);
+    }
+    outputEl.querySelectorAll('.json-tree > .jn').forEach(processNode);
   }
 
   // ── Copy: extract plain text from tree ────────────────────
@@ -1527,6 +1599,25 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
       return JSON.stringify(window._lastParsed, null, getIndent());
     }
     return outputEl.innerText || outputEl.textContent;
+  }
+
+  // Recursively parse string values that are valid JSON (objects/arrays).
+  // Leaves plain strings (numbers-as-strings, etc.) untouched.
+  function deepParseStrings(value) {
+    if (typeof value === 'string') {
+      const t = value.trim();
+      if ((t[0] === '{' || t[0] === '[') ) {
+        try { return deepParseStrings(JSON.parse(t)); } catch (_) {}
+      }
+      return value;
+    }
+    if (Array.isArray(value)) return value.map(deepParseStrings);
+    if (value !== null && typeof value === 'object') {
+      const out = {};
+      for (const k of Object.keys(value)) out[k] = deepParseStrings(value[k]);
+      return out;
+    }
+    return value;
   }
 
   // ── Core: Format ──────────────────────────────────────────
@@ -1540,26 +1631,91 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
       window._lastParsed = undefined;
       return;
     }
-    try {
-      const parsed = JSON.parse(raw);
-      window._lastParsed = parsed;
+    // Try to extract a parsed JSON value, with automatic unescape fallback.
+    // Returns { parsed, unescaped: bool } or throws.
+    function tryParse(str) {
+      // Pass 1: direct parse
+      try {
+        return { parsed: JSON.parse(str), unescaped: false };
+      } catch (_) {}
 
-      outputEl.innerHTML = '';
-      outputEl.className = 'output-area';
+      // Pass 2: input is a JSON string literal — parse yields a string, parse again
+      try {
+        const inner = JSON.parse(str);
+        if (typeof inner === 'string') {
+          return { parsed: JSON.parse(inner), unescaped: true };
+        }
+      } catch (_) {}
+
+      // Pass 3: escaped JSON without outer quotes — e.g. {\"a\":1}
+      // Wrap in quotes so JSON.parse treats it as a string literal, then parse the result
+      try {
+        const inner = JSON.parse('"' + str + '"');
+        if (typeof inner === 'string') {
+          return { parsed: JSON.parse(inner), unescaped: true };
+        }
+      } catch (_) {}
+
+      // Pass 4: outer quotes wrapping JSON — e.g. "{"a":1}" or "{\"a\":1}"
+      // Strip surrounding quotes, then try direct parse or escaped parse (Pass 3 style)
+      if (str.length >= 2 && str[0] === '"' && str[str.length - 1] === '"') {
+        const stripped = str.slice(1, -1);
+        try {
+          return { parsed: JSON.parse(stripped), unescaped: true };
+        } catch (_) {}
+        try {
+          const inner = JSON.parse('"' + stripped + '"');
+          if (typeof inner === 'string') {
+            return { parsed: JSON.parse(inner), unescaped: true };
+          }
+        } catch (_) {}
+      }
+
+      // All passes failed
+      throw new SyntaxError('Invalid JSON');
+    }
+
+    let parsed, unescaped;
+    try {
+      ({ parsed, unescaped } = tryParse(raw));
+    } catch (_) {
+      // Re-run plain JSON.parse to get the native browser error message
+      try { JSON.parse(raw); } catch (e) {
+        window._lastParsed = undefined;
+        outputEl.className = 'output-area has-error';
+        outputEl.textContent = e.message;
+        showFoldButtons(false);
+        setStatus(false, '✗ ' + e.message);
+        return;
+      }
+    }
+
+    const TREE_SIZE_LIMIT = 1024 * 1024; // 1 MB — above this skip deep-parse and DOM tree
+    const isLarge = raw.length > TREE_SIZE_LIMIT;
+
+    if (!isLarge) parsed = deepParseStrings(parsed);
+
+    const formatted = JSON.stringify(parsed, null, getIndent());
+    const lines = formatted.split('\n').length;
+    const bytes = new Blob([formatted]).size;
+    const kb = bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB';
+    const hint = unescaped ? ' · auto-unescaped' : '';
+
+    window._lastParsed = parsed;
+    outputEl.innerHTML = '';
+    outputEl.className = 'output-area';
+
+    if (isLarge) {
+      const pre = document.createElement('pre');
+      pre.style.cssText = 'padding:16px;font-family:var(--font-mono);font-size:13px;line-height:1.7;flex:1;overflow:auto;word-break:break-all;white-space:pre-wrap;margin:0;';
+      pre.textContent = formatted;
+      outputEl.appendChild(pre);
+      showFoldButtons(false);
+      setStatus(true, '✓ Valid JSON' + hint + ' · large file (tree view disabled)', lines + ' lines · ' + kb);
+    } else {
       outputEl.appendChild(buildTree(parsed));
       showFoldButtons(true);
-
-      const formatted = JSON.stringify(parsed, null, getIndent());
-      const lines = formatted.split('\n').length;
-      const bytes = new Blob([formatted]).size;
-      const kb = bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB';
-      setStatus(true, '✓ Valid JSON', lines + ' lines · ' + kb);
-    } catch (e) {
-      window._lastParsed = undefined;
-      outputEl.className = 'output-area has-error';
-      outputEl.textContent = e.message;
-      showFoldButtons(false);
-      setStatus(false, '✗ ' + e.message);
+      setStatus(true, '✓ Valid JSON' + hint, lines + ' lines · ' + kb);
     }
   }
 
@@ -1755,22 +1911,19 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
   });
 
   // ── Set textarea value while preserving undo history ────────
-  // Direct assignment (inputEl.value = x) wipes the browser undo stack.
   // execCommand('insertText') pushes the change into the native undo stack
-  // so Ctrl+Z works after paste / programmatic changes.
+  // so Ctrl+Z works after programmatic changes (e.g. Sample button).
   function setInputValue(text) {
     inputEl.focus();
     inputEl.select();
-    // Modern approach: use execCommand to keep undo stack intact
     const ok = document.execCommand('insertText', false, text);
-    if (!ok) {
-      // Fallback for browsers that don't support execCommand (rare)
-      inputEl.value = text;
-    }
+    if (!ok) inputEl.value = text;
   }
 
   // Auto-format on paste
   // Listen at document level so user doesn't need to click the textarea first.
+  // Always use direct assignment for paste — execCommand is slow on any non-trivial
+  // input (special characters cause significant overhead regardless of size).
   document.addEventListener('paste', (e) => {
     const active = document.activeElement;
     const tag = active ? active.tagName : '';
@@ -1782,8 +1935,9 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
     const text = e.clipboardData && e.clipboardData.getData('text');
     if (!text) return;
     e.preventDefault();
-    setInputValue(text);
-    doFormat();
+    inputEl.value = text;
+    setStatus(null, 'Formatting…');
+    setTimeout(doFormat, 0);
   });
 
   // Auto-format on input (debounced 300ms)
@@ -2417,6 +2571,93 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
 
     // Apply silently (don't update URL on initial load — keep it clean)
     applyTheme(theme, { updateUrl: false, saveLocal: false });
+  })();
+
+  // ═══════════════════════════════════════════════════════════
+  // RESIZER / SPLITTER
+  // ═══════════════════════════════════════════════════════════
+
+  (function initResizer() {
+    const resizer    = document.getElementById('editor-resizer');
+    const editorArea = resizer.closest('.editor-area');
+    const RESIZER_W  = 6;
+    const LS_KEY     = 'jf-split';
+
+    function applyRatio(ratio) {
+      const totalW    = editorArea.getBoundingClientRect().width;
+      const available = totalW - RESIZER_W;
+      const leftPx    = Math.round(available * ratio);
+      const rightPx   = available - leftPx;
+      editorArea.style.gridTemplateColumns = leftPx + 'px ' + RESIZER_W + 'px ' + rightPx + 'px';
+    }
+
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      if (saved !== null) {
+        const ratio = parseFloat(saved);
+        if (ratio > 0.1 && ratio < 0.9) applyRatio(ratio);
+      }
+    } catch {}
+
+    let dragging  = false;
+    let startX    = 0;
+    let startLeft = 0;
+
+    function getLeftPx() {
+      const cols = getComputedStyle(editorArea).gridTemplateColumns.split(' ');
+      return parseFloat(cols[0]) || 0;
+    }
+
+    function onDragStart(clientX) {
+      dragging  = true;
+      startX    = clientX;
+      startLeft = getLeftPx();
+      resizer.classList.add('dragging');
+      document.body.style.cursor     = 'col-resize';
+      document.body.style.userSelect = 'none';
+    }
+
+    function onDragMove(clientX) {
+      if (!dragging) return;
+      const totalW    = editorArea.getBoundingClientRect().width;
+      const available = totalW - RESIZER_W;
+      const minPx     = 80;
+      const maxPx     = available - minPx;
+      const leftPx    = Math.max(minPx, Math.min(maxPx, startLeft + (clientX - startX)));
+      const rightPx   = available - leftPx;
+      editorArea.style.gridTemplateColumns = leftPx + 'px ' + RESIZER_W + 'px ' + rightPx + 'px';
+    }
+
+    function onDragEnd(clientX) {
+      if (!dragging) return;
+      onDragMove(clientX);
+      dragging = false;
+      resizer.classList.remove('dragging');
+      document.body.style.cursor     = '';
+      document.body.style.userSelect = '';
+      const totalW    = editorArea.getBoundingClientRect().width;
+      const available = totalW - RESIZER_W;
+      const ratio     = getLeftPx() / available;
+      try { localStorage.setItem(LS_KEY, ratio.toFixed(4)); } catch {}
+    }
+
+    resizer.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      onDragStart(e.clientX);
+    });
+    document.addEventListener('mousemove', (e) => { if (dragging) onDragMove(e.clientX); });
+    document.addEventListener('mouseup',   (e) => { if (dragging) onDragEnd(e.clientX); });
+
+    resizer.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      onDragStart(e.touches[0].clientX);
+    }, { passive: false });
+    document.addEventListener('touchmove', (e) => {
+      if (dragging) { e.preventDefault(); onDragMove(e.touches[0].clientX); }
+    }, { passive: false });
+    document.addEventListener('touchend', (e) => {
+      if (dragging) onDragEnd(e.changedTouches[0].clientX);
+    });
   })();
 
 })();
