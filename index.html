@@ -3,26 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JSON Formatter Online - Free JSON Beautifier & Validator</title>
-  <meta name="description" content="Free online JSON formatter and validator. Instantly beautify, minify, and validate JSON. Works in your browser — no data is ever uploaded. No signup required.">
-  <meta name="keywords" content="json formatter, json beautifier, json validator, json pretty print, json minify, format json online, json lint">
-  <link rel="canonical" href="https://jsonformatter.dev/">
+  <title>JSON Formatter, Validator &amp; Diff Tool — Free Online</title>
+  <meta name="description" content="Free online JSON tools: format, validate, minify, diff and compare JSON in your browser. Syntax highlighting, shareable links, 5 themes. No signup, no data upload.">
+  <meta name="keywords" content="json formatter, json beautifier, json validator, json pretty print, json minify, format json online, json lint, json diff, json compare, json unescape, json escape">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+  <meta name="theme-color" content="#0f1117" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
+  <link rel="canonical" href="https://jsonopen.com/">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='72' font-family='monospace'>{}</text></svg>">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="JSON Formatter Online - Free JSON Beautifier & Validator">
-  <meta property="og:description" content="Instantly beautify, validate and minify JSON in your browser. Free, fast, no data uploaded.">
+  <meta property="og:title" content="JSON Formatter, Validator &amp; Diff Tool — Free Online">
+  <meta property="og:description" content="Free online JSON tools: format, validate, minify, diff and compare JSON in your browser. No signup, no data upload.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jsonopen.com/">
+  <meta property="og:site_name" content="JSON Formatter Online">
+  <meta property="og:image" content="https://jsonopen.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="JSON Formatter Online — syntax highlighted JSON output">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="JSON Formatter, Validator &amp; Diff Tool — Free Online">
+  <meta name="twitter:description" content="Free online JSON tools: format, validate, minify, diff and compare JSON in your browser. No signup, no data upload.">
+  <meta name="twitter:image" content="https://jsonopen.com/og-image.png">
+  <meta name="twitter:image:alt" content="JSON Formatter Online — syntax highlighted JSON output">
 
   <!-- Schema.org -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "JSON Formatter Online",
-    "description": "Free online JSON formatter, beautifier and validator. All processing happens in your browser.",
-    "applicationCategory": "DeveloperApplication",
-    "operatingSystem": "Web Browser",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://jsonopen.com/#webapp",
+        "name": "JSON Formatter Online",
+        "url": "https://jsonopen.com/",
+        "description": "Free online JSON formatter, beautifier, validator and diff tool. All processing happens in your browser — no data is ever uploaded.",
+        "applicationCategory": "DeveloperApplication",
+        "applicationSubCategory": "Developer Tools",
+        "operatingSystem": "Web Browser",
+        "browserRequirements": "Requires JavaScript",
+        "featureList": [
+          "JSON Formatting and Beautification",
+          "JSON Validation with error highlighting",
+          "JSON Minification",
+          "JSON Diff Comparison",
+          "JSON Escape and Unescape",
+          "Syntax Highlighting",
+          "Shareable links via URL encoding",
+          "Multiple color themes",
+          "Offline capable"
+        ],
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "isAccessibleForFree": true,
+        "inLanguage": "en"
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is a JSON Formatter?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A JSON Formatter (also called a JSON Beautifier or JSON Pretty Printer) takes a compact or minified JSON string and re-formats it with proper indentation and line breaks, making it easy to read and understand. It is an essential tool for developers working with APIs, configuration files, and data exchange."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my data safe when using this tool?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. This JSON Formatter runs entirely in your browser using JavaScript. Your JSON data is never sent to any server. You can even use it offline once the page is loaded. This makes it completely safe for sensitive or proprietary data."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between Format and Minify?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Format adds indentation and newlines to make the JSON human-readable. Minify does the opposite: it removes all unnecessary whitespace to make the JSON as compact as possible, which is ideal for sending data over a network or storing it efficiently."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why am I getting a JSON parse error?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Common causes include: trailing commas after the last item in an object or array (not allowed in JSON), single quotes instead of double quotes for strings, unquoted property keys, or missing commas between items. The validator will highlight the exact location of the error to help you fix it quickly."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I format very large JSON files?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Since all processing is done locally in your browser, there is no server-side file size limit. Performance depends on your device, but modern browsers handle JSON files up to several megabytes without issues."
+            }
+          }
+        ]
+      }
+    ]
   }
   </script>
 
@@ -898,6 +984,31 @@
       .transform-arrow { display: none; }
     }
 
+    /* ── SEO Content Blocks ── */
+    .seo-content {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 24px 40px;
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .seo-content h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .seo-content h3 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 18px 0 6px;
+    }
+    .seo-content p { margin-bottom: 8px; }
+    .seo-content ul { padding-left: 1.4em; }
+    .seo-content li { margin-bottom: 4px; }
+
     /* ── Footer ── */
     footer {
       border-top: 1px solid var(--border);
@@ -906,6 +1017,11 @@
       font-size: 0.78rem;
       color: var(--text-muted);
       background: var(--bg2);
+    }
+    footer small {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.72rem;
     }
 
     /* ── Responsive ── */
@@ -923,15 +1039,13 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb); }
   </style>
-  <!-- pako: gzip compress/decompress in browser -->
-  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 </head>
 <body>
 
 <!-- Header -->
 <header>
   <a class="logo" href="/">
-    <div class="logo-icon">{ }</div>
+    <div class="logo-icon" aria-hidden="true">{ }</div>
     JSON Formatter
   </a>
   <span class="header-tagline">— Online JSON Beautifier & Validator</span>
@@ -945,16 +1059,18 @@
       <button class="theme-swatch"        data-theme-name="ocean"     title="Ocean (Deep Sea)"></button>
       <button class="theme-swatch"        data-theme-name="solarized" title="Solarized"></button>
     </div>
-    <span class="badge">🔒 Data never leaves your browser</span>
+    <span class="badge"><span aria-hidden="true">🔒</span> Data never leaves your browser</span>
   </div>
 </header>
 
 <!-- Tab Navigation -->
-<nav class="tab-nav">
+<nav class="tab-nav" aria-label="Tool sections">
   <button class="tab-btn active" data-tab="formatter">⚡ Formatter</button>
   <button class="tab-btn" data-tab="diff">⇄ Diff</button>
   <button class="tab-btn" data-tab="transform">⚙ Transform</button>
 </nav>
+
+<main id="main-content">
 
 <!-- ═══════════════════ FORMATTER SECTION ═══════════════════ -->
 <div class="page-section active" id="section-formatter">
@@ -1191,6 +1307,22 @@ Example:
   </div>
 </div>
 
+<div class="seo-content">
+  <h2>JSON Diff — Compare Two JSON Objects Online</h2>
+  <p>
+    The JSON Diff tool performs a deep structural comparison between two JSON objects or arrays.
+    Unlike a plain text diff, it understands JSON structure: it identifies added keys, removed keys,
+    and changed values at any nesting depth, even when the order of keys differs.
+  </p>
+  <h3>When to use JSON Diff</h3>
+  <ul>
+    <li>Comparing API responses before and after a code change</li>
+    <li>Auditing configuration file changes in CI/CD pipelines</li>
+    <li>Debugging data transformations in ETL workflows</li>
+    <li>Reviewing JSON schema migrations</li>
+  </ul>
+</div>
+
 </div><!-- /section-diff -->
 
 <!-- ═══════════════════ TRANSFORM SECTION ═══════════════════ -->
@@ -1302,7 +1434,19 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
 
 </div><!-- /transform-area -->
 
+<div class="seo-content">
+  <h2>JSON Transform Tools — Minify, Escape &amp; Unescape</h2>
+  <h3>JSON Minifier / Compressor</h3>
+  <p>Removes all whitespace characters (spaces, tabs, newlines) from a JSON string, reducing its size for API payloads, HTTP request bodies, and data storage.</p>
+  <h3>JSON Unescape</h3>
+  <p>Converts a JSON-encoded string (where quotes and special characters are escaped with backslashes) back into a readable JSON object. Commonly needed when JSON is embedded inside another JSON string field or returned as a stringified value from a database.</p>
+  <h3>JSON Escape</h3>
+  <p>Serializes a JSON object into an escaped string. Useful for embedding JSON inside another JSON value, URL parameters, or shell script arguments.</p>
+</div>
+
 </div><!-- /section-transform -->
+
+</main>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
@@ -1310,7 +1454,26 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
 <!-- Footer -->
 <footer>
   <p>JSON Formatter Online — Free, fast, and private. All processing happens in your browser.</p>
+  <small>&copy; 2025 JSON Formatter Online. No data is collected or stored.</small>
 </footer>
+
+<script>
+// pako lazy-loader: only fetches the library when Share is first triggered
+let _pakoReady = false;
+let _pakoLoadPromise = null;
+function loadPako() {
+  if (_pakoReady) return Promise.resolve();
+  if (_pakoLoadPromise) return _pakoLoadPromise;
+  _pakoLoadPromise = new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js';
+    s.onload = function() { _pakoReady = true; resolve(); };
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  return _pakoLoadPromise;
+}
+</script>
 
 <script>
 (function () {
@@ -1848,6 +2011,7 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
   document.getElementById('btn-share').addEventListener('click', () => {
     const raw = inputEl.value.trim();
     if (!raw) { showToast('Nothing to share — paste some JSON first', 'error'); return; }
+    loadPako().then(() => {
     try {
       // 1. gzip compress
       const compressed = pako.deflate(raw);
@@ -1868,29 +2032,34 @@ Example: "{\"name\":\"Alice\",\"age\":30}"' spellcheck="false" autocomplete="off
     } catch (e) {
       showToast('Failed to generate link: ' + e.message, 'error');
     }
+    }).catch(() => showToast('Failed to load compression library', 'error'));
   });
 
   // ── On load: restore JSON from URL ?d= param ─────────────
   (function restoreFromUrl() {
-    try {
-      const params = new URLSearchParams(location.search);
-      const b64 = params.get('d');
-      if (!b64) return;
-      // decode base64url → Uint8Array
-      const b64std = b64.replace(/-/g, '+').replace(/_/g, '/');
-      const binary = atob(b64std);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      // decompress
-      const json = pako.inflate(bytes, { to: 'string' });
-      // set value and format
-      inputEl.value = json;
-      doFormat();
-      // clean URL without reloading (keeps it tidy after load)
-      history.replaceState(null, '', location.pathname);
-    } catch (e) {
-      console.warn('Failed to restore from URL:', e.message);
-    }
+    const params = new URLSearchParams(location.search);
+    const b64 = params.get('d');
+    if (!b64) return;
+    loadPako().then(function() {
+      try {
+        // decode base64url → Uint8Array
+        const b64std = b64.replace(/-/g, '+').replace(/_/g, '/');
+        const binary = atob(b64std);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        // decompress
+        const json = pako.inflate(bytes, { to: 'string' });
+        // set value and format
+        inputEl.value = json;
+        doFormat();
+        // clean URL without reloading (keeps it tidy after load)
+        history.replaceState(null, '', location.pathname);
+      } catch (e) {
+        console.warn('Failed to restore from URL:', e.message);
+      }
+    }).catch(function(e) {
+      console.warn('Failed to load pako for URL restore:', e);
+    });
   })();
   document.getElementById('btn-clear').addEventListener('click', doClear);
   document.getElementById('btn-paste').addEventListener('click', doPaste);
