@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Formatter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --text: #e2e4ec;
+      --text-dim: #7a7f99;
+      --accent: #7c6af7;
+      --success: #4ade80;
+      --error: #f87171;
+      --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+      --json-key: #79c0ff;
+      --json-string: #a5d6a7;
+      --json-number: #f8c555;
+      --json-bool: #ff9f7f;
+      --json-null: #ff9f7f;
+      --json-bracket: #7a7f99;
+    }
+
+    html {
+      /* allow user to resize the whole popup */
+      width: 700px;
+      height: 520px;
+    }
+
+    body {
+      width: 100%;
+      height: 100%;
+      min-width: 420px;
+      min-height: 300px;
+      resize: both;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; border-bottom: 1px solid var(--border);
+      background: var(--surface); flex-shrink: 0; height: 40px;
+    }
+    .logo { font-family: var(--font-mono); color: var(--accent); font-weight: 700; font-size: 14px; margin-right: 8px; }
+    .header-actions { display: flex; gap: 5px; align-items: center; }
+
+    button {
+      border: none; border-radius: 5px; cursor: pointer;
+      font-size: 11px; font-family: inherit; transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.8; }
+    .btn-primary { background: var(--accent); color: #fff; padding: 4px 11px; font-weight: 600; }
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); padding: 4px 9px; }
+
+    /* ── Main: resizable split layout ── */
+    .main {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .pane-input {
+      width: 200px;
+      min-width: 80px;
+      max-width: 60%;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .divider {
+      width: 5px;
+      flex-shrink: 0;
+      background: var(--border);
+      cursor: col-resize;
+      transition: background 0.15s;
+      position: relative;
+      z-index: 1;
+    }
+    .divider:hover, .divider.dragging { background: var(--accent); }
+
+    .pane-output {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .pane-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--text-dim);
+      padding: 4px 10px; background: var(--surface);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 26px;
+    }
+
+    .fold-btns { display: flex; gap: 4px; }
+    .fold-btn {
+      font-size: 10px; padding: 1px 6px;
+      background: transparent; color: var(--text-dim);
+      border: 1px solid var(--border); border-radius: 3px;
+    }
+    .fold-btn:hover { color: var(--text); }
+
+    textarea {
+      flex: 1; width: 100%; background: var(--bg); color: var(--text);
+      border: none; outline: none; resize: none;
+      font-family: var(--font-mono); font-size: 11px; line-height: 1.6;
+      padding: 8px 10px;
+    }
+
+    .output-area {
+      flex: 1; overflow: auto;
+      font-family: var(--font-mono); font-size: 12px; line-height: 1.6;
+      padding: 8px 10px;
+    }
+    .output-area.has-error { color: var(--error); white-space: pre-wrap; word-break: break-all; }
+
+    /* ── JSON Tree ── */
+    .tree-node { padding-left: 14px; position: relative; }
+    .tree-node.root-node { padding-left: 0; }
+    .node-line { white-space: nowrap; display: flex; align-items: baseline; }
+    .node-line:hover .node-copy { opacity: 1; }
+
+    .toggle {
+      cursor: pointer; user-select: none; color: var(--json-bracket);
+      font-size: 9px; margin-right: 3px; display: inline-block; width: 10px; flex-shrink: 0;
+    }
+    .toggle:hover { color: var(--text); }
+    .key { color: var(--json-key); }
+    .colon { color: var(--text-dim); margin: 0 3px; }
+    .string { color: var(--json-string); }
+    .number { color: var(--json-number); }
+    .boolean { color: var(--json-bool); }
+    .null { color: var(--json-null); }
+    .bracket { color: var(--json-bracket); }
+    .comma { color: var(--json-bracket); }
+    .children { display: block; }
+    .children.collapsed { display: none; }
+    .inline-preview { color: var(--text-dim); font-size: 10px; margin-left: 4px; }
+
+    .node-copy {
+      opacity: 0; margin-left: 6px; cursor: pointer;
+      font-size: 10px; color: var(--text-dim); flex-shrink: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 3px; padding: 0 4px; line-height: 1.4;
+      transition: opacity 0.1s, color 0.1s;
+    }
+    .node-copy:hover { color: var(--text); opacity: 1 !important; }
+
+    /* ── Statusbar ── */
+    .statusbar {
+      height: 26px; display: flex; align-items: center; gap: 8px;
+      padding: 0 12px; background: var(--surface);
+      border-top: 1px solid var(--border);
+      font-size: 11px; color: var(--text-dim); flex-shrink: 0;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+    .status-dot.ok { background: var(--success); }
+    .status-dot.err { background: var(--error); }
+    .open-full { margin-left: auto; color: var(--accent); text-decoration: none; font-size: 11px; opacity: 0.8; }
+    .open-full:hover { opacity: 1; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 34px; left: 50%; transform: translateX(-50%);
+      background: #2a2d3a; color: var(--text); border: 1px solid var(--border);
+      border-radius: 6px; padding: 5px 14px; font-size: 11px;
+      opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; z-index: 99;
+    }
+    #toast.show { opacity: 1; }
+    #toast.error { border-color: var(--error); color: var(--error); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span><span class="logo">{}</span>JSON Formatter</span>
+    <div class="header-actions">
+      <button class="btn-ghost" id="btn-copy">Copy All</button>
+      <button class="btn-ghost" id="btn-share">Share</button>
+      <button class="btn-ghost" id="btn-clear">Clear</button>
+      <button class="btn-primary" id="btn-format">Format</button>
+    </div>
+  </div>
+
+  <div class="main" id="main">
+    <div class="pane-input" id="pane-input">
+      <div class="pane-label">Input</div>
+      <textarea id="input" placeholder="Paste JSON…" spellcheck="false"></textarea>
+    </div>
+    <div class="divider" id="divider"></div>
+    <div class="pane-output">
+      <div class="pane-label">
+        <span>Output</span>
+        <div class="fold-btns" id="fold-btns" style="display:none">
+          <button class="fold-btn" id="btn-expand">Expand All</button>
+          <button class="fold-btn" id="btn-collapse">Collapse All</button>
+        </div>
+      </div>
+      <div class="output-area" id="output"></div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-msg">Ready</span>
+    <a class="open-full" href="https://jsonopen.com" target="_blank" id="open-full">Open full site ↗</a>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="pako.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

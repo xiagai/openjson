@@ -13,6 +13,16 @@
 - **5 Themes** — Dark, Light, Mocha, Ocean, Solarized
 - **Keyboard friendly** — Works offline, zero dependencies except pako for URL compression
 
+## Chrome Extension
+
+A popup extension with Format, Copy, Share, and Expand/Collapse — right in your toolbar.
+
+- Auto-detects escaped JSON strings (including `"{\"key\":\"value\"}"` format)
+- Share generates a `jsonopen.com/?d=...` link you can open in the full site
+- Resizable split layout, node-level copy on hover
+
+Source in [`extension/`](./extension/). To load locally: `chrome://extensions/` → Developer mode → Load unpacked → select the `extension/` folder.
+
 ## Usage
 
 Open **[jsonopen.com](https://jsonopen.com/)** in any browser. No installation required.
@@ -21,7 +31,7 @@ Open **[jsonopen.com](https://jsonopen.com/)** in any browser. No installation r
 
 Single-file HTML app (`index.html`). No build system, no framework, no backend.
 
-The only external dependency is [pako](https://github.com/nodeca/pako) (CDN) for gzip compression in the Share feature.
+The only external dependency is [pako](https://github.com/nodeca/pako) for gzip compression in the Share feature (bundled in `extension/pako.min.js`, loaded from CDN on the web version).
 
 ## License
 
