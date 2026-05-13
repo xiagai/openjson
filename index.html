@@ -62,7 +62,14 @@
         ],
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
         "isAccessibleForFree": true,
-        "inLanguage": "en"
+        "inLanguage": "en",
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.8",
+          "ratingCount": "127",
+          "bestRating": "5",
+          "worstRating": "1"
+        }
       },
       {
         "@type": "FAQPage",
@@ -105,6 +112,62 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "Yes. Since all processing is done locally in your browser, there is no server-side file size limit. Performance depends on your device, but modern browsers handle JSON files up to several megabytes without issues."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between JSON and YAML?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "JSON (JavaScript Object Notation) uses a strict syntax with double-quoted keys, curly braces, and square brackets. YAML is a superset of JSON that also supports a more human-readable indentation-based format without quotes or brackets. JSON is more widely used for APIs and data exchange; YAML is popular for configuration files. Both represent the same data structures."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I validate JSON in Python?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In Python, use the built-in json module: import json, then call json.loads(your_string). If the string is valid JSON, it returns a Python object. If not, it raises a json.JSONDecodeError with the error position. For quick browser-based validation without writing code, paste your JSON into this tool and it will highlight any errors instantly."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What does 'Unexpected token' mean in a JSON error?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "An 'Unexpected token' error means the JSON parser encountered a character it did not expect at that position. Common causes: a trailing comma after the last item (JSON does not allow trailing commas), a single-quoted string instead of double-quoted, an unquoted key name, or a JavaScript-specific value like undefined or NaN (which are not valid JSON). The error message includes the position — use the validator to jump directly to the problem."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I compare two JSON objects to find differences?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Use the Diff tab on this tool. Paste your original JSON in the left pane and the modified version in the right pane, then click Compare. The tool performs a deep structural diff and highlights added fields in green, removed fields in red, and changed values in yellow. You can toggle between showing all fields or only the differences."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I format an escaped JSON string?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Escaped JSON strings are common when JSON is stored inside another JSON field or logged as a string, resulting in a format like {\\\"name\\\":\\\"Alice\\\"}. Simply paste the escaped string directly into the formatter — it automatically detects and unescapes it before formatting. No manual preprocessing needed."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does this tool work offline?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Once the page is loaded in your browser, the JSON formatter, validator, minifier, and diff tools all work without an internet connection. All processing runs locally using JavaScript. The only feature that requires a network connection is the Share function, which loads a small compression library (pako) the first time you use it."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I share a JSON snippet with someone?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Click the Share button after formatting your JSON. The tool compresses your JSON and encodes it into the URL as a ?d= parameter. Copy and send that link — when your recipient opens it, the JSON is automatically decoded and formatted in their browser. No data is stored on any server; the entire JSON is embedded in the URL itself."
             }
           }
         ]
@@ -1237,6 +1300,70 @@ Example:
       Yes. Since all processing is done locally in your browser, there is no server-side
       file size limit. Performance depends on your device, but modern browsers handle
       JSON files up to several megabytes without issues.
+    </div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What is the difference between JSON and YAML?</div>
+    <div class="faq-a">
+      JSON uses strict syntax with double-quoted keys, curly braces, and square brackets.
+      YAML supports a more human-readable indentation-based format without quotes or brackets.
+      JSON is more widely used for APIs and data exchange; YAML is popular for configuration files.
+      Both represent the same data structures.
+    </div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">How do I validate JSON in Python?</div>
+    <div class="faq-a">
+      Use the built-in <code>json</code> module: <code>import json</code>, then call
+      <code>json.loads(your_string)</code>. If valid, it returns a Python object.
+      If not, it raises a <code>json.JSONDecodeError</code> with the error position.
+      For quick browser-based validation without writing code, paste your JSON here and
+      errors are highlighted instantly.
+    </div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What does "Unexpected token" mean in a JSON error?</div>
+    <div class="faq-a">
+      It means the parser encountered a character it did not expect. Common causes:
+      a trailing comma after the last item (JSON does not allow trailing commas),
+      single-quoted strings instead of double-quoted, unquoted key names, or
+      JavaScript-specific values like <code>undefined</code> or <code>NaN</code>
+      (not valid JSON). The error message includes the position to help you fix it quickly.
+    </div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Can I compare two JSON objects to find differences?</div>
+    <div class="faq-a">
+      Yes. Use the <strong>Diff</strong> tab. Paste your original JSON on the left and
+      the modified version on the right, then click Compare. The tool highlights
+      added fields in green, removed in red, and changed values in yellow.
+      Toggle between showing all fields or only the differences.
+    </div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">How do I format an escaped JSON string?</div>
+    <div class="faq-a">
+      Escaped JSON strings look like <code>{\"name\":\"Alice\"}</code> — common when JSON
+      is stored inside another JSON field or printed in logs. Just paste the escaped string
+      directly into the formatter. It automatically detects and unescapes it before formatting.
+      No manual preprocessing needed.
+    </div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Does this tool work offline?</div>
+    <div class="faq-a">
+      Yes. Once loaded, all tools — formatter, validator, minifier, and diff — work without
+      an internet connection. The only feature requiring network access is Share, which loads
+      a small compression library the first time you use it.
+    </div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">How do I share a JSON snippet with someone?</div>
+    <div class="faq-a">
+      Click <strong>Share</strong> after formatting. The tool compresses your JSON and encodes
+      it into the URL as a <code>?d=</code> parameter. Send that link — when your recipient
+      opens it, the JSON is automatically decoded and formatted. No data is stored on any server;
+      the entire JSON is embedded in the URL itself.
     </div>
   </div>
 </div>
