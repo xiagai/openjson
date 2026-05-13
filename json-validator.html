@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Validator Online — Free JSON Syntax Checker</title>
+  <meta name="description" content="Free online JSON validator. Instantly check if your JSON is valid, find syntax errors with exact line and column info. No signup, no data upload — runs in your browser.">
+  <meta name="keywords" content="json validator, json validator online, json syntax checker, validate json, json lint, check json, json error checker">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+  <link rel="canonical" href="https://jsonopen.com/json-validator">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='72' font-family='monospace'>{}</text></svg>">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="JSON Validator Online — Free JSON Syntax Checker">
+  <meta property="og:description" content="Instantly validate JSON syntax in your browser. Find errors with exact position info. Free, private, no data upload.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jsonopen.com/json-validator">
+  <meta property="og:site_name" content="JSON Formatter Online">
+  <meta property="og:image" content="https://jsonopen.com/og-image.png">
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://jsonopen.com/json-validator#webapp",
+        "name": "JSON Validator Online",
+        "url": "https://jsonopen.com/json-validator",
+        "description": "Free online JSON validator that checks JSON syntax and reports errors with exact line and column positions.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web Browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "isAccessibleForFree": true
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "JSON Formatter", "item": "https://jsonopen.com/" },
+          { "@type": "ListItem", "position": 2, "name": "JSON Validator", "item": "https://jsonopen.com/json-validator" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is a JSON Validator?",
+            "acceptedAnswer": { "@type": "Answer", "text": "A JSON Validator checks whether a given string is valid JSON according to the JSON specification (RFC 8259). It parses the input and reports any syntax errors — including the exact line and column where the error occurred — so you can fix them quickly." }
+          },
+          {
+            "@type": "Question",
+            "name": "What are common JSON validation errors?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The most common JSON errors are: trailing commas after the last item in an object or array (not allowed in JSON), using single quotes instead of double quotes for strings, unquoted property keys, missing commas between items, using JavaScript values like undefined or NaN (not valid JSON), and unclosed brackets or braces." }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between JSON Validator and JSON Linter?",
+            "acceptedAnswer": { "@type": "Answer", "text": "JSON Validator and JSON Linter refer to the same concept — a tool that checks JSON syntax for correctness. 'Linter' is a term borrowed from code quality tools, while 'Validator' emphasizes schema or spec conformance. For basic syntax checking, they are interchangeable." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my JSON data safe to validate here?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. The JSON Validator runs entirely in your browser using JavaScript. Your data is never sent to any server. It is safe to validate sensitive or proprietary JSON here." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3a;
+      --text: #e2e4ec; --text-dim: #7a7f99; --accent: #7c6af7;
+      --success: #4ade80; --error: #f87171;
+      --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    }
+    html { font-size: 14px; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Nav */
+    .nav { display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .nav-logo { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; padding: 4px 10px; border-radius: 5px; transition: color 0.15s, background 0.15s; }
+    .nav-link:hover { color: var(--text); background: var(--border); }
+    .nav-link.active { color: var(--text); background: var(--border); }
+
+    /* Hero */
+    .hero { padding: 32px 24px 16px; max-width: 900px; margin: 0 auto; width: 100%; }
+    .hero h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+    .hero p { color: var(--text-dim); font-size: 0.9rem; }
+
+    /* Tool */
+    .tool { max-width: 900px; margin: 0 auto; width: 100%; padding: 0 24px 24px; flex: 1; display: flex; flex-direction: column; }
+    .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    button { border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-family: inherit; transition: opacity 0.15s; padding: 6px 14px; }
+    button:hover { opacity: 0.85; }
+    .btn-primary { background: var(--accent); color: #fff; font-weight: 600; }
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); }
+
+    .editor-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-height: 320px; }
+    @media (max-width: 600px) { .editor-wrap { grid-template-columns: 1fr; } }
+    .pane { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .pane-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); padding: 6px 12px; border-bottom: 1px solid var(--border); background: var(--bg); }
+    textarea { flex: 1; background: transparent; color: var(--text); border: none; outline: none; resize: none; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.7; padding: 12px; min-height: 280px; }
+    .result { flex: 1; padding: 16px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+    .result.valid { color: var(--success); }
+    .result.invalid { color: var(--error); }
+    .result.empty { color: var(--text-dim); font-style: italic; }
+
+    /* Status */
+    .status { margin-top: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-dim); min-height: 22px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+    .dot.ok { background: var(--success); }
+    .dot.err { background: var(--error); }
+
+    /* Content */
+    .content { max-width: 900px; margin: 0 auto; width: 100%; padding: 0 24px 48px; }
+    .content h2 { font-size: 1.1rem; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
+    .content p, .content li { color: var(--text-dim); line-height: 1.7; font-size: 0.9rem; }
+    .content ul { padding-left: 20px; }
+    .content li { margin-bottom: 4px; }
+    .content code { font-family: var(--font-mono); font-size: 0.8rem; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; color: var(--text); }
+    .faq-item { margin-bottom: 20px; }
+    .faq-q { font-weight: 600; color: var(--text); margin-bottom: 6px; font-size: 0.9rem; }
+    .faq-a { color: var(--text-dim); font-size: 0.875rem; line-height: 1.7; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 16px 24px; text-align: center; font-size: 0.8rem; color: var(--text-dim); }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav-logo" href="/">{}  JSON Open</a>
+    <div class="nav-links">
+      <a class="nav-link" href="/">Formatter</a>
+      <a class="nav-link active" href="/json-validator">Validator</a>
+      <a class="nav-link" href="/json-diff">Diff</a>
+      <a class="nav-link" href="/json-minify">Minify</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>JSON Validator Online</h1>
+    <p>Instantly check if your JSON is valid. Find syntax errors with exact position info — free, private, runs in your browser.</p>
+  </div>
+
+  <div class="tool">
+    <div class="toolbar">
+      <button class="btn-primary" id="btn-validate">Validate</button>
+      <button class="btn-ghost" id="btn-clear">Clear</button>
+      <button class="btn-ghost" id="btn-sample">Load Sample</button>
+    </div>
+    <div class="editor-wrap">
+      <div class="pane">
+        <div class="pane-label">Input JSON</div>
+        <textarea id="input" placeholder="Paste your JSON here to validate…" spellcheck="false"></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Validation Result</div>
+        <div class="result empty" id="result">Paste JSON and click Validate →</div>
+      </div>
+    </div>
+    <div class="status">
+      <div class="dot" id="dot"></div>
+      <span id="status-msg">Ready</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <h2>What is JSON Validation?</h2>
+    <p>JSON validation checks whether a string conforms to the JSON specification (RFC 8259). Valid JSON must use double-quoted strings, properly nested brackets and braces, comma-separated values, and only supported value types: strings, numbers, booleans, null, objects, and arrays.</p>
+
+    <h2>Common JSON Errors</h2>
+    <ul>
+      <li><strong>Trailing comma</strong> — <code>{"a": 1,}</code> — JSON does not allow a comma after the last item</li>
+      <li><strong>Single quotes</strong> — <code>{'key': 'value'}</code> — must use double quotes</li>
+      <li><strong>Unquoted keys</strong> — <code>{key: "value"}</code> — keys must be quoted strings</li>
+      <li><strong>Invalid values</strong> — <code>undefined</code>, <code>NaN</code>, <code>Infinity</code> are JavaScript values, not valid JSON</li>
+      <li><strong>Unclosed brackets</strong> — missing <code>}</code> or <code>]</code> at the end</li>
+      <li><strong>Escaped characters</strong> — invalid escape sequences inside strings</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <div class="faq-q">What is a JSON Validator?</div>
+      <div class="faq-a">A JSON Validator checks whether a given string is valid JSON according to the JSON specification (RFC 8259). It parses the input and reports any syntax errors — including the exact line and column where the error occurred — so you can fix them quickly.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What are common JSON validation errors?</div>
+      <div class="faq-a">The most common JSON errors are: trailing commas after the last item, single quotes instead of double quotes, unquoted property keys, missing commas between items, JavaScript-specific values like <code>undefined</code> or <code>NaN</code>, and unclosed brackets or braces.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What is the difference between JSON Validator and JSON Linter?</div>
+      <div class="faq-a">JSON Validator and JSON Linter refer to the same concept. 'Linter' is a term borrowed from code quality tools, while 'Validator' emphasizes spec conformance. For basic syntax checking, they are interchangeable.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is my JSON data safe to validate here?</div>
+      <div class="faq-a">Yes. The validator runs entirely in your browser. Your data is never sent to any server — it is safe to validate sensitive or proprietary JSON here.</div>
+    </div>
+  </div>
+
+  <footer>
+    <a href="/">JSON Formatter</a> · <a href="/json-validator">Validator</a> · <a href="/json-diff">Diff</a> · <a href="/json-minify">Minify</a> · <a href="https://github.com/xiagai/openjson" target="_blank">GitHub</a>
+  </footer>
+
+  <script>
+  (function () {
+    const inputEl  = document.getElementById('input');
+    const resultEl = document.getElementById('result');
+    const dotEl    = document.getElementById('dot');
+    const statusEl = document.getElementById('status-msg');
+
+    const SAMPLE = '{\n  "name": "Alice",\n  "age": 30,\n  "active": true,\n  "scores": [98, 87, 92],\n  "address": {\n    "city": "New York",\n    "zip": "10001"\n  }\n}';
+
+    function validate() {
+      const raw = inputEl.value.trim();
+      if (!raw) {
+        resultEl.className = 'result empty';
+        resultEl.textContent = 'Paste JSON and click Validate →';
+        dotEl.className = 'dot';
+        statusEl.textContent = 'Ready';
+        return;
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        const count = typeof parsed === 'object' && parsed !== null
+          ? (Array.isArray(parsed) ? parsed.length + ' items' : Object.keys(parsed).length + ' keys')
+          : typeof parsed;
+        resultEl.className = 'result valid';
+        resultEl.textContent = '✓ Valid JSON\n\nType: ' + (Array.isArray(parsed) ? 'Array' : typeof parsed) + '\n' + (typeof parsed === 'object' && parsed !== null ? (Array.isArray(parsed) ? 'Length: ' + parsed.length : 'Keys: ' + Object.keys(parsed).length) : 'Value: ' + parsed);
+        dotEl.className = 'dot ok';
+        statusEl.textContent = '✓ Valid JSON — ' + count;
+      } catch (e) {
+        resultEl.className = 'result invalid';
+        resultEl.textContent = '✗ Invalid JSON\n\n' + e.message;
+        dotEl.className = 'dot err';
+        statusEl.textContent = '✗ ' + e.message;
+      }
+    }
+
+    document.getElementById('btn-validate').addEventListener('click', validate);
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      inputEl.value = '';
+      resultEl.className = 'result empty';
+      resultEl.textContent = 'Paste JSON and click Validate →';
+      dotEl.className = 'dot';
+      statusEl.textContent = 'Ready';
+    });
+    document.getElementById('btn-sample').addEventListener('click', () => {
+      inputEl.value = SAMPLE;
+      validate();
+    });
+
+    let timer;
+    inputEl.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(validate, 400);
+    });
+
+    document.addEventListener('paste', (e) => {
+      if (document.activeElement === inputEl) return;
+      const text = e.clipboardData.getData('text');
+      if (!text) return;
+      inputEl.value = text;
+      validate();
+      inputEl.focus();
+    });
+  })();
+  </script>
+</body>
+</html>

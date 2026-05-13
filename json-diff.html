@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Diff Tool — Compare Two JSON Objects Online</title>
+  <meta name="description" content="Free online JSON diff tool. Compare two JSON objects side by side and highlight differences — added, removed, and changed fields. No signup, no data upload.">
+  <meta name="keywords" content="json diff, json diff tool, json compare, compare json, json difference, json diff online, compare two json objects, json diff checker">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+  <link rel="canonical" href="https://jsonopen.com/json-diff">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='72' font-family='monospace'>{}</text></svg>">
+
+  <meta property="og:title" content="JSON Diff Tool — Compare Two JSON Objects Online">
+  <meta property="og:description" content="Compare two JSON objects side by side. Highlights added, removed, and changed fields with color coding. Free, private, in-browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jsonopen.com/json-diff">
+  <meta property="og:site_name" content="JSON Formatter Online">
+  <meta property="og:image" content="https://jsonopen.com/og-image.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://jsonopen.com/json-diff#webapp",
+        "name": "JSON Diff Tool",
+        "url": "https://jsonopen.com/json-diff",
+        "description": "Free online JSON diff tool that performs a deep structural comparison of two JSON objects and highlights added, removed, and changed fields.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web Browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "isAccessibleForFree": true
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "JSON Formatter", "item": "https://jsonopen.com/" },
+          { "@type": "ListItem", "position": 2, "name": "JSON Diff", "item": "https://jsonopen.com/json-diff" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is a JSON Diff tool?",
+            "acceptedAnswer": { "@type": "Answer", "text": "A JSON Diff tool performs a deep structural comparison of two JSON objects and highlights the differences: fields that were added (shown in green), removed (shown in red), or changed (shown in yellow). Unlike text-based diff tools, a JSON diff understands the structure and compares by key names and values rather than raw text lines." }
+          },
+          {
+            "@type": "Question",
+            "name": "How is JSON diff different from text diff?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Text diff compares files line by line without understanding structure, so reformatting JSON (changing indentation) would show many false differences. JSON diff compares the actual data structure, so it correctly identifies that {\"a\":1,\"b\":2} and {\"b\":2,\"a\":1} are identical even though the key order differs." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use this to compare API responses?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Paste the first API response in the left pane and the second response in the right pane, then click Compare. The tool will show exactly which fields changed between the two responses — useful for debugging API changes, comparing staging vs production responses, or reviewing data migrations." }
+          },
+          {
+            "@type": "Question",
+            "name": "Does key order matter in JSON diff?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. This JSON diff tool compares by key names, not key order. Two JSON objects with the same keys and values in different order are considered identical. Only the actual data values matter, not the sequence in which keys appear." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3a;
+      --text: #e2e4ec; --text-dim: #7a7f99; --accent: #7c6af7;
+      --success: #4ade80; --error: #f87171; --warn: #fbbf24;
+      --add-bg: rgba(74,222,128,0.08); --add-color: #4ade80;
+      --del-bg: rgba(248,113,113,0.08); --del-color: #f87171;
+      --chg-bg: rgba(251,191,36,0.08); --chg-color: #fbbf24;
+      --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    }
+    html { font-size: 14px; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+    .nav { display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; padding: 4px 10px; border-radius: 5px; transition: color 0.15s, background 0.15s; }
+    .nav-link:hover { color: var(--text); background: var(--border); }
+    .nav-link.active { color: var(--text); background: var(--border); }
+    .hero { padding: 32px 24px 16px; max-width: 1100px; margin: 0 auto; width: 100%; }
+    .hero h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+    .hero p { color: var(--text-dim); font-size: 0.9rem; }
+    .tool { max-width: 1100px; margin: 0 auto; width: 100%; padding: 0 24px 24px; flex: 1; display: flex; flex-direction: column; }
+    .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    button { border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-family: inherit; transition: opacity 0.15s; padding: 6px 14px; }
+    button:hover { opacity: 0.85; }
+    .btn-primary { background: var(--accent); color: #fff; font-weight: 600; }
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); }
+    .editor-wrap { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; flex: 1; min-height: 320px; }
+    @media (max-width: 768px) { .editor-wrap { grid-template-columns: 1fr; } }
+    .pane { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .pane-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); padding: 6px 12px; border-bottom: 1px solid var(--border); background: var(--bg); }
+    textarea { flex: 1; background: transparent; color: var(--text); border: none; outline: none; resize: none; font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.7; padding: 10px; min-height: 280px; }
+    .diff-output { flex: 1; overflow: auto; font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.7; padding: 10px; min-height: 280px; }
+    .diff-empty { color: var(--text-dim); font-style: italic; padding: 10px; font-family: var(--font-mono); font-size: 0.78rem; }
+    .diff-node { padding-left: 14px; }
+    .diff-node.root { padding-left: 0; }
+    .diff-line { white-space: nowrap; display: block; padding: 1px 4px; border-radius: 2px; }
+    .diff-line.added { background: var(--add-bg); }
+    .diff-line.removed { background: var(--del-bg); }
+    .diff-line.changed { background: var(--chg-bg); }
+    .diff-key { color: #79c0ff; }
+    .diff-colon { color: var(--text-dim); margin: 0 3px; }
+    .diff-val-add { color: var(--add-color); }
+    .diff-val-del { color: var(--del-color); }
+    .diff-val-chg { color: var(--chg-color); }
+    .diff-bracket { color: var(--text-dim); }
+    .diff-val { color: #e2e4ec; }
+    .diff-str { color: #a5d6a7; }
+    .diff-num { color: #f8c555; }
+    .diff-bool { color: #ff9f7f; }
+    .diff-null { color: #ff9f7f; }
+    .legend { display: flex; gap: 16px; margin-bottom: 10px; font-size: 0.78rem; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 5px; color: var(--text-dim); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+    .status { margin-top: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-dim); min-height: 22px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+    .dot.ok { background: var(--success); }
+    .dot.err { background: var(--error); }
+    .content { max-width: 1100px; margin: 0 auto; width: 100%; padding: 0 24px 48px; }
+    .content h2 { font-size: 1.1rem; font-weight: 600; margin: 32px 0 12px; }
+    .content p, .content li { color: var(--text-dim); line-height: 1.7; font-size: 0.9rem; }
+    .content ul { padding-left: 20px; }
+    .content li { margin-bottom: 4px; }
+    .faq-item { margin-bottom: 20px; }
+    .faq-q { font-weight: 600; color: var(--text); margin-bottom: 6px; font-size: 0.9rem; }
+    .faq-a { color: var(--text-dim); font-size: 0.875rem; line-height: 1.7; }
+    footer { border-top: 1px solid var(--border); padding: 16px 24px; text-align: center; font-size: 0.8rem; color: var(--text-dim); }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav-logo" href="/">{}  JSON Open</a>
+    <div class="nav-links">
+      <a class="nav-link" href="/">Formatter</a>
+      <a class="nav-link" href="/json-validator">Validator</a>
+      <a class="nav-link active" href="/json-diff">Diff</a>
+      <a class="nav-link" href="/json-minify">Minify</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>JSON Diff Tool</h1>
+    <p>Compare two JSON objects side by side. Highlights added, removed, and changed fields with color coding. Free, private, runs in your browser.</p>
+  </div>
+
+  <div class="tool">
+    <div class="toolbar">
+      <button class="btn-primary" id="btn-compare">Compare</button>
+      <button class="btn-ghost" id="btn-swap">⇅ Swap</button>
+      <button class="btn-ghost" id="btn-clear">Clear</button>
+      <button class="btn-ghost" id="btn-sample">Load Sample</button>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--add-color)"></div> Added</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--del-color)"></div> Removed</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--chg-color)"></div> Changed</div>
+    </div>
+    <div class="editor-wrap">
+      <div class="pane">
+        <div class="pane-label">JSON A (Original)</div>
+        <textarea id="input-a" placeholder="Paste original JSON here…" spellcheck="false"></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-label">JSON B (Modified)</div>
+        <textarea id="input-b" placeholder="Paste modified JSON here…" spellcheck="false"></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-label">Diff Result</div>
+        <div class="diff-empty" id="diff-output">Paste JSON A and B, then click Compare →</div>
+      </div>
+    </div>
+    <div class="status">
+      <div class="dot" id="dot"></div>
+      <span id="status-msg">Ready</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <h2>What is a JSON Diff?</h2>
+    <p>A JSON diff performs a deep structural comparison of two JSON objects, identifying exactly which fields were added, removed, or changed. Unlike line-by-line text diff, a JSON diff understands the data structure — so reordering keys or reformatting indentation does not show as a difference.</p>
+
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li>Comparing API responses between staging and production environments</li>
+      <li>Reviewing changes in configuration files between versions</li>
+      <li>Debugging data transformations and ETL pipelines</li>
+      <li>Verifying that a data migration preserved all expected fields</li>
+      <li>Comparing webhook payloads across different events</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <div class="faq-q">What is a JSON Diff tool?</div>
+      <div class="faq-a">A JSON Diff tool performs a deep structural comparison of two JSON objects and highlights differences: fields added (green), removed (red), or changed (yellow). Unlike text diff, it understands JSON structure and compares by key names and values.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How is JSON diff different from text diff?</div>
+      <div class="faq-a">Text diff compares files line by line without understanding structure. JSON diff compares the actual data, so <code>{"a":1,"b":2}</code> and <code>{"b":2,"a":1}</code> are correctly identified as identical even though the key order differs.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I use this to compare API responses?</div>
+      <div class="faq-a">Yes. Paste the first API response on the left and the second on the right, then click Compare. The tool shows exactly which fields changed — useful for debugging API changes or comparing staging vs production responses.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Does key order matter in JSON diff?</div>
+      <div class="faq-a">No. This tool compares by key names, not key order. Two JSON objects with the same keys and values in different order are considered identical.</div>
+    </div>
+  </div>
+
+  <footer>
+    <a href="/">JSON Formatter</a> · <a href="/json-validator">Validator</a> · <a href="/json-diff">Diff</a> · <a href="/json-minify">Minify</a> · <a href="https://github.com/xiagai/openjson" target="_blank">GitHub</a>
+  </footer>
+
+  <script>
+  (function () {
+    const inputA = document.getElementById('input-a');
+    const inputB = document.getElementById('input-b');
+    const diffOut = document.getElementById('diff-output');
+    const dotEl  = document.getElementById('dot');
+    const statusEl = document.getElementById('status-msg');
+
+    const SAMPLE_A = '{\n  "name": "Alice",\n  "age": 30,\n  "role": "admin",\n  "scores": [98, 87, 92],\n  "address": { "city": "New York", "zip": "10001" }\n}';
+    const SAMPLE_B = '{\n  "name": "Alice",\n  "age": 31,\n  "role": "superadmin",\n  "scores": [98, 87, 95],\n  "address": { "city": "New York", "zip": "10002" },\n  "email": "alice@example.com"\n}';
+
+    function valStr(v) {
+      if (v === null) return { cls: 'diff-null', text: 'null' };
+      if (typeof v === 'boolean') return { cls: 'diff-bool', text: String(v) };
+      if (typeof v === 'number') return { cls: 'diff-num', text: String(v) };
+      if (typeof v === 'string') return { cls: 'diff-str', text: '"' + v.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"' };
+      return { cls: 'diff-val', text: JSON.stringify(v) };
+    }
+
+    function renderDiff(a, b, depth) {
+      const frag = document.createDocumentFragment();
+
+      if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null || Array.isArray(a) !== Array.isArray(b)) {
+        // scalar or type change
+        const line = document.createElement('div');
+        line.className = 'diff-line changed';
+        const va = valStr(a), vb = valStr(b);
+        line.innerHTML = '<span class="diff-val-del">' + va.text + '</span> → <span class="diff-val-add">' + vb.text + '</span>';
+        frag.appendChild(line);
+        return frag;
+      }
+
+      if (Array.isArray(a)) {
+        const len = Math.max(a.length, b.length);
+        for (let i = 0; i < len; i++) {
+          const line = document.createElement('div');
+          if (i >= a.length) {
+            line.className = 'diff-line added';
+            const v = valStr(b[i]);
+            line.innerHTML = '<span class="diff-bracket">[' + i + ']</span><span class="diff-colon">:</span><span class="' + v.cls + '">' + v.text + '</span>';
+          } else if (i >= b.length) {
+            line.className = 'diff-line removed';
+            const v = valStr(a[i]);
+            line.innerHTML = '<span class="diff-bracket">[' + i + ']</span><span class="diff-colon">:</span><span class="' + v.cls + '">' + v.text + '</span>';
+          } else if (JSON.stringify(a[i]) === JSON.stringify(b[i])) {
+            const v = valStr(a[i]);
+            line.innerHTML = '<span class="diff-bracket">[' + i + ']</span><span class="diff-colon">:</span><span class="' + v.cls + '">' + v.text + '</span>';
+          } else {
+            line.className = 'diff-line changed';
+            line.innerHTML = '<span class="diff-bracket">[' + i + ']</span><span class="diff-colon">:</span>';
+            line.appendChild(renderDiff(a[i], b[i], depth + 1));
+          }
+          frag.appendChild(line);
+        }
+        return frag;
+      }
+
+      const allKeys = new Set([...Object.keys(a), ...Object.keys(b)]);
+      allKeys.forEach(k => {
+        const wrap = document.createElement('div');
+        const keySpan = '<span class="diff-key">"' + k + '"</span><span class="diff-colon">:</span>';
+        if (!(k in a)) {
+          wrap.className = 'diff-line added';
+          const v = valStr(b[k]);
+          wrap.innerHTML = keySpan + '<span class="' + v.cls + '">' + v.text + '</span>';
+        } else if (!(k in b)) {
+          wrap.className = 'diff-line removed';
+          const v = valStr(a[k]);
+          wrap.innerHTML = keySpan + '<span class="' + v.cls + '">' + v.text + '</span>';
+        } else if (JSON.stringify(a[k]) === JSON.stringify(b[k])) {
+          const v = valStr(a[k]);
+          wrap.innerHTML = keySpan + '<span class="' + v.cls + '">' + v.text + '</span>';
+        } else if (typeof a[k] === 'object' && a[k] !== null && typeof b[k] === 'object' && b[k] !== null) {
+          wrap.className = 'diff-line';
+          wrap.innerHTML = keySpan;
+          const nested = document.createElement('div');
+          nested.className = 'diff-node';
+          nested.appendChild(renderDiff(a[k], b[k], depth + 1));
+          wrap.appendChild(nested);
+        } else {
+          wrap.className = 'diff-line changed';
+          const va = valStr(a[k]), vb = valStr(b[k]);
+          wrap.innerHTML = keySpan + '<span class="diff-val-del">' + va.text + '</span> → <span class="diff-val-add">' + vb.text + '</span>';
+        }
+        frag.appendChild(wrap);
+      });
+      return frag;
+    }
+
+    function compare() {
+      const rawA = inputA.value.trim(), rawB = inputB.value.trim();
+      if (!rawA || !rawB) {
+        diffOut.className = 'diff-empty';
+        diffOut.textContent = 'Paste JSON A and B, then click Compare →';
+        dotEl.className = 'dot'; statusEl.textContent = 'Ready';
+        return;
+      }
+      let a, b;
+      try { a = JSON.parse(rawA); } catch(e) { diffOut.className = 'diff-empty'; diffOut.textContent = '✗ JSON A: ' + e.message; dotEl.className = 'dot err'; statusEl.textContent = '✗ JSON A invalid'; return; }
+      try { b = JSON.parse(rawB); } catch(e) { diffOut.className = 'diff-empty'; diffOut.textContent = '✗ JSON B: ' + e.message; dotEl.className = 'dot err'; statusEl.textContent = '✗ JSON B invalid'; return; }
+
+      if (JSON.stringify(a) === JSON.stringify(b)) {
+        diffOut.className = 'diff-empty';
+        diffOut.textContent = '✓ Identical — no differences found.';
+        dotEl.className = 'dot ok'; statusEl.textContent = '✓ Identical';
+        return;
+      }
+
+      const container = document.createElement('div');
+      container.className = 'diff-node root';
+      container.appendChild(renderDiff(a, b, 0));
+      diffOut.className = 'diff-output';
+      diffOut.innerHTML = '';
+      diffOut.appendChild(container);
+
+      const added   = diffOut.querySelectorAll('.diff-line.added').length;
+      const removed = diffOut.querySelectorAll('.diff-line.removed').length;
+      const changed = diffOut.querySelectorAll('.diff-line.changed').length;
+      dotEl.className = 'dot err';
+      statusEl.textContent = added + ' added · ' + removed + ' removed · ' + changed + ' changed';
+    }
+
+    document.getElementById('btn-compare').addEventListener('click', compare);
+    document.getElementById('btn-swap').addEventListener('click', () => {
+      const t = inputA.value; inputA.value = inputB.value; inputB.value = t;
+      compare();
+    });
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      inputA.value = ''; inputB.value = '';
+      diffOut.className = 'diff-empty';
+      diffOut.textContent = 'Paste JSON A and B, then click Compare →';
+      dotEl.className = 'dot'; statusEl.textContent = 'Ready';
+    });
+    document.getElementById('btn-sample').addEventListener('click', () => {
+      inputA.value = SAMPLE_A; inputB.value = SAMPLE_B; compare();
+    });
+
+    let timer;
+    [inputA, inputB].forEach(el => el.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(compare, 500); }));
+  })();
+  </script>
+</body>
+</html>

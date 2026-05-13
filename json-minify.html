@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Minifier Online — Free JSON Compressor &amp; Minify Tool</title>
+  <meta name="description" content="Free online JSON minifier. Compress and minify JSON by removing whitespace and formatting. Reduce JSON file size instantly. No signup, no data upload.">
+  <meta name="keywords" content="json minifier, json minify, json compressor, compress json, minify json online, json uglify, json minification, reduce json size">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+  <link rel="canonical" href="https://jsonopen.com/json-minify">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='72' font-family='monospace'>{}</text></svg>">
+
+  <meta property="og:title" content="JSON Minifier Online — Free JSON Compressor">
+  <meta property="og:description" content="Compress and minify JSON by removing all unnecessary whitespace. Reduce JSON file size instantly in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jsonopen.com/json-minify">
+  <meta property="og:site_name" content="JSON Formatter Online">
+  <meta property="og:image" content="https://jsonopen.com/og-image.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://jsonopen.com/json-minify#webapp",
+        "name": "JSON Minifier Online",
+        "url": "https://jsonopen.com/json-minify",
+        "description": "Free online JSON minifier that removes all whitespace and formatting to produce compact JSON for production use.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web Browser",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "isAccessibleForFree": true
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "JSON Formatter", "item": "https://jsonopen.com/" },
+          { "@type": "ListItem", "position": 2, "name": "JSON Minifier", "item": "https://jsonopen.com/json-minify" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What does JSON minification do?",
+            "acceptedAnswer": { "@type": "Answer", "text": "JSON minification removes all unnecessary whitespace — spaces, tabs, and newlines — from a JSON string without changing its data. The result is a compact single-line JSON that is smaller in size, making it faster to transmit over a network and more efficient to store." }
+          },
+          {
+            "@type": "Question",
+            "name": "When should I minify JSON?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Minify JSON when sending it over HTTP APIs to reduce payload size, when storing JSON in a database or file to save space, or when embedding JSON in source code where readability is not required. Avoid minifying JSON that humans need to read and edit directly." }
+          },
+          {
+            "@type": "Question",
+            "name": "Does minification change the JSON data?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. Minification only removes whitespace — spaces, tabs, and newlines — between tokens. The data structure, all keys, and all values remain identical. Any JSON parser will produce exactly the same result from the minified version as from the original." }
+          },
+          {
+            "@type": "Question",
+            "name": "How much does minification reduce JSON size?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The size reduction depends on how much whitespace the original JSON contains. Heavily formatted JSON with 2-space or 4-space indentation can be reduced by 20-40%. The tool shows both original and minified sizes so you can see the exact savings." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --border: #2a2d3a;
+      --text: #e2e4ec; --text-dim: #7a7f99; --accent: #7c6af7;
+      --success: #4ade80; --error: #f87171;
+      --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    }
+    html { font-size: 14px; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+    .nav { display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .nav-logo { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; padding: 4px 10px; border-radius: 5px; transition: color 0.15s, background 0.15s; }
+    .nav-link:hover { color: var(--text); background: var(--border); }
+    .nav-link.active { color: var(--text); background: var(--border); }
+    .hero { padding: 32px 24px 16px; max-width: 900px; margin: 0 auto; width: 100%; }
+    .hero h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+    .hero p { color: var(--text-dim); font-size: 0.9rem; }
+    .tool { max-width: 900px; margin: 0 auto; width: 100%; padding: 0 24px 24px; flex: 1; display: flex; flex-direction: column; }
+    .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    button { border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-family: inherit; transition: opacity 0.15s; padding: 6px 14px; }
+    button:hover { opacity: 0.85; }
+    .btn-primary { background: var(--accent); color: #fff; font-weight: 600; }
+    .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); }
+    .editor-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-height: 320px; }
+    @media (max-width: 600px) { .editor-wrap { grid-template-columns: 1fr; } }
+    .pane { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .pane-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); padding: 6px 12px; border-bottom: 1px solid var(--border); background: var(--bg); display: flex; justify-content: space-between; align-items: center; }
+    .size-badge { font-size: 0.7rem; color: var(--text-dim); }
+    textarea, .output-pre { flex: 1; background: transparent; color: var(--text); border: none; outline: none; resize: none; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.7; padding: 12px; min-height: 280px; }
+    .output-pre { overflow: auto; white-space: pre-wrap; word-break: break-all; }
+    .output-pre.empty { color: var(--text-dim); font-style: italic; }
+    .output-pre.error { color: var(--error); }
+    .status { margin-top: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-dim); min-height: 22px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+    .dot.ok { background: var(--success); }
+    .dot.err { background: var(--error); }
+    .content { max-width: 900px; margin: 0 auto; width: 100%; padding: 0 24px 48px; }
+    .content h2 { font-size: 1.1rem; font-weight: 600; margin: 32px 0 12px; }
+    .content p, .content li { color: var(--text-dim); line-height: 1.7; font-size: 0.9rem; }
+    .content ul { padding-left: 20px; }
+    .content li { margin-bottom: 4px; }
+    .content code { font-family: var(--font-mono); font-size: 0.8rem; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; color: var(--text); }
+    .faq-item { margin-bottom: 20px; }
+    .faq-q { font-weight: 600; color: var(--text); margin-bottom: 6px; font-size: 0.9rem; }
+    .faq-a { color: var(--text-dim); font-size: 0.875rem; line-height: 1.7; }
+    footer { border-top: 1px solid var(--border); padding: 16px 24px; text-align: center; font-size: 0.8rem; color: var(--text-dim); }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav-logo" href="/">{}  JSON Open</a>
+    <div class="nav-links">
+      <a class="nav-link" href="/">Formatter</a>
+      <a class="nav-link" href="/json-validator">Validator</a>
+      <a class="nav-link" href="/json-diff">Diff</a>
+      <a class="nav-link active" href="/json-minify">Minify</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>JSON Minifier Online</h1>
+    <p>Remove all whitespace from JSON to produce compact, production-ready output. Free, private, runs in your browser.</p>
+  </div>
+
+  <div class="tool">
+    <div class="toolbar">
+      <button class="btn-primary" id="btn-minify">Minify</button>
+      <button class="btn-ghost" id="btn-copy">Copy Result</button>
+      <button class="btn-ghost" id="btn-clear">Clear</button>
+      <button class="btn-ghost" id="btn-sample">Load Sample</button>
+    </div>
+    <div class="editor-wrap">
+      <div class="pane">
+        <div class="pane-label">
+          <span>Input JSON</span>
+          <span class="size-badge" id="input-size"></span>
+        </div>
+        <textarea id="input" placeholder="Paste formatted JSON here to minify…" spellcheck="false"></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-label">
+          <span>Minified Output</span>
+          <span class="size-badge" id="output-size"></span>
+        </div>
+        <div class="output-pre empty" id="output">Click Minify to compress your JSON →</div>
+      </div>
+    </div>
+    <div class="status">
+      <div class="dot" id="dot"></div>
+      <span id="status-msg">Ready</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <h2>What is JSON Minification?</h2>
+    <p>JSON minification removes all unnecessary whitespace — spaces, tabs, and newlines — from a JSON string without changing its data. The result is a compact single-line JSON that is faster to transmit over HTTP and more efficient to store.</p>
+
+    <h2>When to Minify JSON</h2>
+    <ul>
+      <li>Sending JSON over HTTP APIs to reduce payload size and latency</li>
+      <li>Storing JSON in databases or files where human readability is not required</li>
+      <li>Embedding JSON in JavaScript source code or configuration</li>
+      <li>Optimizing mobile app data transfer to save bandwidth</li>
+    </ul>
+
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <div class="faq-q">What does JSON minification do?</div>
+      <div class="faq-a">JSON minification removes all unnecessary whitespace — spaces, tabs, and newlines — from a JSON string without changing its data. The result is a compact single-line JSON that is smaller in size and faster to transmit.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">When should I minify JSON?</div>
+      <div class="faq-a">Minify JSON when sending it over HTTP APIs to reduce payload size, when storing JSON to save space, or when embedding JSON in source code. Avoid minifying JSON that humans need to read and edit directly.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Does minification change the JSON data?</div>
+      <div class="faq-a">No. Minification only removes whitespace between tokens. The data structure, all keys, and all values remain identical. Any JSON parser will produce exactly the same result from the minified version.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How much does minification reduce JSON size?</div>
+      <div class="faq-a">Heavily formatted JSON with 2-space or 4-space indentation can be reduced by 20–40%. The tool shows both original and minified sizes so you can see the exact savings.</div>
+    </div>
+  </div>
+
+  <footer>
+    <a href="/">JSON Formatter</a> · <a href="/json-validator">Validator</a> · <a href="/json-diff">Diff</a> · <a href="/json-minify">Minify</a> · <a href="https://github.com/xiagai/openjson" target="_blank">GitHub</a>
+  </footer>
+
+  <script>
+  (function () {
+    const inputEl    = document.getElementById('input');
+    const outputEl   = document.getElementById('output');
+    const dotEl      = document.getElementById('dot');
+    const statusEl   = document.getElementById('status-msg');
+    const inputSize  = document.getElementById('input-size');
+    const outputSize = document.getElementById('output-size');
+
+    const SAMPLE = '{\n  "name": "Alice",\n  "age": 30,\n  "active": true,\n  "scores": [98, 87, 92],\n  "address": {\n    "city": "New York",\n    "zip": "10001"\n  }\n}';
+
+    let lastMinified = '';
+
+    function fmt(bytes) { return bytes < 1024 ? bytes + ' B' : (bytes / 1024).toFixed(1) + ' KB'; }
+
+    function minify() {
+      const raw = inputEl.value.trim();
+      const rawBytes = new Blob([raw]).size;
+      inputSize.textContent = raw ? fmt(rawBytes) : '';
+      if (!raw) {
+        outputEl.className = 'output-pre empty';
+        outputEl.textContent = 'Click Minify to compress your JSON →';
+        outputSize.textContent = '';
+        dotEl.className = 'dot'; statusEl.textContent = 'Ready';
+        lastMinified = '';
+        return;
+      }
+      try {
+        const minified = JSON.stringify(JSON.parse(raw));
+        lastMinified = minified;
+        outputEl.className = 'output-pre';
+        outputEl.textContent = minified;
+        const minBytes = new Blob([minified]).size;
+        outputSize.textContent = fmt(minBytes);
+        const saved = Math.round((1 - minBytes / rawBytes) * 100);
+        dotEl.className = 'dot ok';
+        statusEl.textContent = '✓ Minified — ' + fmt(rawBytes) + ' → ' + fmt(minBytes) + (saved > 0 ? ' (' + saved + '% smaller)' : '');
+      } catch (e) {
+        lastMinified = '';
+        outputEl.className = 'output-pre error';
+        outputEl.textContent = '✗ ' + e.message;
+        outputSize.textContent = '';
+        dotEl.className = 'dot err';
+        statusEl.textContent = '✗ ' + e.message;
+      }
+    }
+
+    document.getElementById('btn-minify').addEventListener('click', minify);
+    document.getElementById('btn-copy').addEventListener('click', () => {
+      if (!lastMinified) return;
+      navigator.clipboard.writeText(lastMinified).then(() => {
+        const btn = document.getElementById('btn-copy');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Result'; }, 1500);
+      });
+    });
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      inputEl.value = ''; lastMinified = '';
+      outputEl.className = 'output-pre empty';
+      outputEl.textContent = 'Click Minify to compress your JSON →';
+      inputSize.textContent = ''; outputSize.textContent = '';
+      dotEl.className = 'dot'; statusEl.textContent = 'Ready';
+    });
+    document.getElementById('btn-sample').addEventListener('click', () => { inputEl.value = SAMPLE; minify(); });
+
+    let timer;
+    inputEl.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(minify, 400); });
+    document.addEventListener('paste', (e) => {
+      if (document.activeElement === inputEl) return;
+      const text = e.clipboardData.getData('text');
+      if (!text) return;
+      inputEl.value = text; minify(); inputEl.focus();
+    });
+  })();
+  </script>
+</body>
+</html>
