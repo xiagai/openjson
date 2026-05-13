@@ -2271,10 +2271,37 @@ function loadPako() {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  // Auto-switch tab from URL param: ?tab=diff → open Diff tab
+  // Auto-switch tab from URL param or pathname
   (function () {
-    const tab = new URLSearchParams(location.search).get('tab');
-    if (tab) switchTab(tab);
+    const pathMeta = {
+      '/json-validator': {
+        tab: 'formatter',
+        title: 'JSON Validator Online — Free JSON Syntax Checker',
+        desc: 'Free online JSON validator. Instantly check if your JSON is valid, find syntax errors with exact position info. No signup, no data upload.'
+      },
+      '/json-diff': {
+        tab: 'diff',
+        title: 'JSON Diff Tool — Compare Two JSON Objects Online',
+        desc: 'Free online JSON diff tool. Compare two JSON objects side by side and highlight added, removed, and changed fields. No signup, no data upload.'
+      },
+      '/json-minify': {
+        tab: 'transform',
+        title: 'JSON Minifier Online — Free JSON Compressor',
+        desc: 'Free online JSON minifier. Compress and minify JSON by removing whitespace. Reduce JSON file size instantly. No signup, no data upload.'
+      }
+    };
+
+    const meta = pathMeta[location.pathname];
+    const tabParam = new URLSearchParams(location.search).get('tab');
+
+    if (meta) {
+      switchTab(meta.tab);
+      document.title = meta.title;
+      const descEl = document.querySelector('meta[name="description"]');
+      if (descEl) descEl.content = meta.desc;
+    } else if (tabParam) {
+      switchTab(tabParam);
+    }
   })();
 
   // ═══════════════════════════════════════════════════════════

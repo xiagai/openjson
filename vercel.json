@@ -1,4 +1,9 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/json-validator", "destination": "/index.html" },
+    { "source": "/json-diff",      "destination": "/index.html" },
+    { "source": "/json-minify",    "destination": "/index.html" }
+  ]
 }
